@@ -107,6 +107,146 @@ Fluent:RegisterCustomTheme("Crimson", {
     },
 })
 
+-- Reference from Xenovia Quarta (DxD)
+Fluent:RegisterCustomTheme("Azure", {
+    Accent = Color3.fromRGB(50, 150, 255),
+    AcrylicMain = Color3.fromRGB(20, 38, 65),
+    AcrylicBorder = Color3.fromRGB(90, 160, 240),
+    AcrylicGradient = ColorSequence.new(Color3.fromRGB(55, 90, 150), Color3.fromRGB(15, 28, 50)),
+    AcrylicNoise = 0.90,
+    TitleBarLine = Color3.fromRGB(110, 200, 255),
+    Tab = Color3.fromRGB(30, 52, 85),
+    Element = Color3.fromRGB(45, 75, 120),
+    ElementBorder = Color3.fromRGB(130, 200, 255),
+    InElementBorder = Color3.fromRGB(100, 170, 240),
+    ElementTransparency = 0.92,
+    ToggleSlider = Color3.fromRGB(200, 235, 255),
+    ToggleToggled = Color3.fromRGB(50, 150, 255),
+    SliderRail = Color3.fromRGB(75, 120, 180),
+    DropdownFrame = Color3.fromRGB(25, 45, 75),
+    DropdownHolder = Color3.fromRGB(18, 32, 60),
+    DropdownBorder = Color3.fromRGB(100, 170, 240),
+    DropdownOption = Color3.fromRGB(42, 70, 112),
+    Keybind = Color3.fromRGB(25, 45, 75),
+    Input = Color3.fromRGB(25, 45, 75),
+    InputFocused = Color3.fromRGB(52, 85, 135),
+    InputIndicator = Color3.fromRGB(85, 180, 255),
+    Dialog = Color3.fromRGB(20, 38, 65),
+    DialogHolder = Color3.fromRGB(15, 28, 50),
+    DialogHolderLine = Color3.fromRGB(110, 190, 255),
+    DialogButton = Color3.fromRGB(45, 75, 120),
+    DialogButtonBorder = Color3.fromRGB(110, 190, 255),
+    DialogBorder = Color3.fromRGB(100, 170, 240),
+    DialogInput = Color3.fromRGB(25, 45, 75),
+    DialogInputLine = Color3.fromRGB(85, 180, 255),
+    Text = Color3.fromRGB(250, 252, 255),
+    SubText = Color3.fromRGB(200, 225, 250),
+    Hover = Color3.fromRGB(255, 255, 255),
+    HoverChange = 0.08,
+    Background = "rbxassetid://84872616459551",
+    BackgroundTransparency = 0.12,
+    ViewportBackground = Color3.fromRGB(15, 28, 50),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(18, 32, 60),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.35,
+        RotationSpeed = 15,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 150, 255)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(100, 200, 255)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(160, 230, 255)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 250, 255)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(180, 220, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 150, 255))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(65, 110, 170),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(60, 160, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(30, 85, 180))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 235, 255)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(110, 200, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(100, 170, 240))
+        })
+    }
+})
+
+-- Reference from Rias Gremory 
+Fluent:RegisterCustomTheme("Scarlet", {
+    Accent = Color3.fromRGB(255, 50, 80),
+    AcrylicMain = Color3.fromRGB(45, 18, 28),
+    AcrylicBorder = Color3.fromRGB(220, 70, 100),
+    AcrylicGradient = ColorSequence.new(Color3.fromRGB(75, 30, 45), Color3.fromRGB(30, 10, 18)),
+    AcrylicNoise = 0.90,
+    TitleBarLine = Color3.fromRGB(255, 80, 120),
+    Tab = Color3.fromRGB(55, 22, 35),
+    Element = Color3.fromRGB(60, 28, 42),
+    ElementBorder = Color3.fromRGB(255, 90, 130),
+    InElementBorder = Color3.fromRGB(200, 80, 115),
+    ElementTransparency = 0.92,
+    ToggleSlider = Color3.fromRGB(255, 210, 225),
+    ToggleToggled = Color3.fromRGB(255, 60, 95),
+    SliderRail = Color3.fromRGB(120, 50, 70),
+    DropdownFrame = Color3.fromRGB(50, 20, 32),
+    DropdownHolder = Color3.fromRGB(38, 14, 24),
+    DropdownBorder = Color3.fromRGB(190, 75, 110),
+    DropdownOption = Color3.fromRGB(58, 26, 40),
+    Keybind = Color3.fromRGB(50, 20, 32),
+    Input = Color3.fromRGB(50, 20, 32),
+    InputFocused = Color3.fromRGB(72, 35, 52),
+    InputIndicator = Color3.fromRGB(255, 75, 110),
+    Dialog = Color3.fromRGB(45, 18, 28),
+    DialogHolder = Color3.fromRGB(35, 12, 22),
+    DialogHolderLine = Color3.fromRGB(210, 80, 120),
+    DialogButton = Color3.fromRGB(60, 28, 42),
+    DialogButtonBorder = Color3.fromRGB(210, 80, 120),
+    DialogBorder = Color3.fromRGB(190, 75, 110),
+    DialogInput = Color3.fromRGB(50, 20, 32),
+    DialogInputLine = Color3.fromRGB(255, 75, 110),
+    Text = Color3.fromRGB(255, 245, 250),
+    SubText = Color3.fromRGB(235, 200, 215),
+    Hover = Color3.fromRGB(255, 255, 255),
+    HoverChange = 0.08,
+    Background = "rbxassetid://82815674474603",
+    BackgroundTransparency = 0.12,
+    ViewportBackground = Color3.fromRGB(30, 10, 18),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(35, 12, 22),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.35,
+        RotationSpeed = 15,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 50, 80)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(255, 120, 100)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(255, 200, 140)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(255, 255, 200)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(255, 160, 180)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 50, 80))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(110, 40, 60),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 60, 95)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 30, 55))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 200, 225)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 110, 150)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(210, 80, 120))
+        })
+    }
+})
+
 Fluent:RegisterCustomTheme("Bloomings", {
     Accent = Color3.fromRGB(255, 80, 150),
     AcrylicMain = Color3.fromRGB(40, 15, 30),
@@ -10979,95 +11119,185 @@ FloatingButtonManager:SetFolder("GoonWares/Floating")
 FloatingButtonManager:BuildConfigSection(Tabs.Settings)
 FloatingButtonManager:LoadAutoloadConfig()
 
-toggleGui = Instance.new("ScreenGui")
-toggleGui.Name = "OpenUi"
-toggleGui.Parent = LocalPlayer:WaitForChild("PlayerGui")
-toggleGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-toggleGui.ResetOnSpawn = false
+local openshit = Instance.new("ScreenGui")
+openshit.Name = "openshit"
+openshit.Parent = LocalPlayer:WaitForChild("PlayerGui")
+openshit.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+openshit.ResetOnSpawn = false
 
-mainBtn = Instance.new("TextButton")
-mainBtn.Name = "OpenButton"
-mainBtn.Parent = toggleGui
-mainBtn.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainBtn.BackgroundTransparency = 1
-mainBtn.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
-mainBtn.Size = UDim2.new(0, 64, 0, 42)
-mainBtn.Text = ""
-mainBtn.Visible = true
-Instance.new("UICorner", mainBtn)
+local mainopen = Instance.new("TextButton")
+mainopen.Name = "mainopen"
+mainopen.Parent = openshit
+mainopen.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+mainopen.BackgroundTransparency = 1
+mainopen.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
+mainopen.Size = UDim2.new(0, 64, 0, 42)
+mainopen.Text = ""
+mainopen.Visible = true
 
-frontImage = Instance.new("ImageLabel")
+local mainopens = Instance.new("UICorner")
+mainopens.Parent = mainopen
+
+local SizeBackMulti = 0.1
+local AssetsIcon = "rbxassetid://139095000385640"
+local AssetsBackground = "rbxassetid://109694296016043"
+
+local backgroundImage = Instance.new("ImageLabel")
+backgroundImage.Name = "RotatingBackground"
+backgroundImage.Parent = mainopen
+backgroundImage.Size = UDim2.new(2.3 + SizeBackMulti, 0, 2.3 + SizeBackMulti, 0)
+backgroundImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+backgroundImage.AnchorPoint = Vector2.new(0.5, 0.5)
+backgroundImage.BackgroundTransparency = 1
+backgroundImage.Image = AssetsBackground
+backgroundImage.SizeConstraint = Enum.SizeConstraint.RelativeXX
+backgroundImage.ZIndex = 0
+
+local frontImage = Instance.new("ImageLabel")
 frontImage.Name = "StaticIcon"
-frontImage.Parent = mainBtn
-frontImage.Size = UDim2.fromOffset(55, 55)
+frontImage.Parent = mainopen
+frontImage.Size = UDim2.new(0.8, 0, 1.2, 0)
 frontImage.Position = UDim2.new(0.5, 0, 0.5, 0)
 frontImage.AnchorPoint = Vector2.new(0.5, 0.5)
 frontImage.BackgroundTransparency = 1
-frontImage.Image = "rbxassetid://139095000385640"
+frontImage.Image = AssetsIcon
 frontImage.ZIndex = 1
-Instance.new("UICorner", frontImage).CornerRadius = UDim.new(0.2, 0)
 
-function MakeDraggableOpenUi(topbar, obj)
-    local dragging, dragInput, dragStart, startPos = false, nil, nil, nil
-    local holdingDrag, holdToken = false, 0
-    obj:SetAttribute("Locked", false)
+local frontCorner = Instance.new("UICorner")
+frontCorner.CornerRadius = UDim.new(1, 0)
+frontCorner.Parent = frontImage
+
+local rotation = 0
+local speed = 90 
+local lastTime = tick()
+
+task.spawn(function()
+	while true do
+		local now = tick()
+		local delta = now - lastTime
+		lastTime = now
+		
+		rotation = (rotation + speed * delta) % 360
+		backgroundImage.Rotation = rotation
+
+		task.wait()
+	end
+end)
+
+local function MakeDraggable(topbarobject, object, locked)
+    local Dragging = false
+    local DragInput
+    local DragStart
+    local StartPosition
+
+    local Holding = false
+    local HoldTime = 1.0
+    local MoveCancelThreshold = 6
+    local HoldToken = 0
+
+    object:SetAttribute("Locked", locked or false)
 
     local function Update(input)
-        if obj:GetAttribute("Locked") then return end
-        local delta = input.Position - dragStart
-        obj.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+        if object:GetAttribute("Locked") then return end
+        local delta = input.Position - DragStart
+        object.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + delta.Y
+        )
     end
 
     local function ToggleLock()
-        local newState = not obj:GetAttribute("Locked")
-        obj:SetAttribute("Locked", newState)
-        Notify(newState and "Locked" or "Unlocked", newState and "Locked in place" or "Can be moved", "Info", nil, 2)
+        local newState = not object:GetAttribute("Locked")
+        object:SetAttribute("Locked", newState)
+
+        Fluent:Notify({
+            Title = newState and "Button Locked" or "Button Unlocked",
+            Content = newState and "This button is now locked in place." or "This button can now be moved.",
+            Duration = 2
+        })
     end
 
-    topbar.InputBegan:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-        dragging = not obj:GetAttribute("Locked")
-        holdingDrag = true
-        dragStart = input.Position
-        startPos = obj.Position
-        holdToken = holdToken + 1
-        local token = holdToken
-        task.delay(1.0, function()
-            if holdingDrag and token == holdToken then ToggleLock() end
+    topbarobject.InputBegan:Connect(function(input)
+        if input.UserInputType ~= Enum.UserInputType.MouseButton1
+        and input.UserInputType ~= Enum.UserInputType.Touch then
+            return
+        end
+
+        Dragging = not object:GetAttribute("Locked")
+        Holding = true
+        DragStart = input.Position
+        StartPosition = object.Position
+
+        HoldToken += 1
+        local token = HoldToken
+
+        task.delay(HoldTime, function()
+            if Holding and token == HoldToken then
+                ToggleLock()
+            end
         end)
+
         input.Changed:Connect(function()
             if input.UserInputState == Enum.UserInputState.End then
-                dragging = false
-                holdingDrag = false
+                Dragging = false
+                Holding = false
             end
         end)
     end)
 
-    topbar.InputChanged:Connect(function(input)
-        if not dragStart then return end
-        if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            if (input.Position - dragStart).Magnitude > 6 then holdingDrag = false end
-            dragInput = input
+    topbarobject.InputChanged:Connect(function(input)
+        if not DragStart then return end
+
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+            if (input.Position - DragStart).Magnitude > MoveCancelThreshold then
+                Holding = false
+            end
+            DragInput = input
         end
     end)
 
     UserInputService.InputChanged:Connect(function(input)
-        if input == dragInput and dragging then Update(input) end
+        if input == DragInput and Dragging then
+            Update(input)
+        end
     end)
 end
 
-MakeDraggableOpenUi(mainBtn, mainBtn)
+MakeDraggable(mainopen, mainopen, false)
 
-uiOpen = true
-
-mainBtn.MouseButton1Click:Connect(function()
-    local ok = pcall(function()
-        Window:Minimize()
+local function playSound(soundId)
+    local sound = Instance.new("Sound")
+    sound.SoundId = "rbxassetid://" .. soundId
+    sound.Parent = game:GetService("SoundService")
+    sound:Play()
+    sound.Ended:Connect(function()
+        sound:Destroy()
     end)
-    if not ok then
-        uiOpen = not uiOpen
-        if uiOpen then Window:Show() else Window:Hide() end
+end
+
+mainopen.MouseButton1Click:Connect(function()
+    local sounds = { "", "", "" }
+    playSound(sounds[math.random(#sounds)])
+    Window:Minimize()
+
+    local function smoothSpeed(target, duration)
+        local start = speed
+        local steps = 30
+        for i = 1, steps do
+            speed = start + (target - start) * (i / steps)
+            task.wait(duration / steps)
+        end
+        speed = target
     end
+    
+    smoothSpeed(360, 0.4)
+    task.wait(0.5)
+    smoothSpeed(180, 0.4)
+    task.wait(0.3)
+    smoothSpeed(90, 0.4)
 end)
 
 FloatingButtonManager:AddButton("OpenUiBtn", mainBtn, false, false, nil, mainBtn)
