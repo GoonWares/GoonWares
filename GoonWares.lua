@@ -25,87 +25,13 @@ local PathfindingService = game:GetService("PathfindingService")
 local LocalPlayer = Players.LocalPlayer
 local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-Modded/releases/download/Fluent/FluentPro"))()
+local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-modded/releases/download/1.4.6/FluentPro"))()
 
 function Notify(title, content, ntype, icon, duration)
     Fluent:Notify({ Title = title, Content = content, Type = ntype or "Info", Icon = icon, Duration = duration or 3 })
 end
 
 isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
-
-CrimsonBackgroundImages = {
-    "rbxassetid://132324914333495",
-    "rbxassetid://74252111742950",
-}
-CrimsonRandomBackground = CrimsonBackgroundImages[math.random(1, #CrimsonBackgroundImages)]
-
-Fluent:RegisterCustomTheme("Crimson", {
-    Accent = Color3.fromRGB(220, 30, 60),
-    AcrylicMain = Color3.fromRGB(8, 6, 10),
-    AcrylicBorder = Color3.fromRGB(120, 15, 35),
-    AcrylicGradient = ColorSequence.new(Color3.fromRGB(10, 6, 12), Color3.fromRGB(4, 3, 6)),
-    AcrylicNoise = 1,
-    TitleBarLine = Color3.fromRGB(180, 20, 45),
-    Tab = Color3.fromRGB(16, 10, 16),
-    Element = Color3.fromRGB(14, 8, 14),
-    ElementBorder = Color3.fromRGB(100, 10, 25),
-    InElementBorder = Color3.fromRGB(200, 25, 55),
-    ElementTransparency = 0.84,
-    ToggleSlider = Color3.fromRGB(40, 10, 18),
-    ToggleToggled = Color3.fromRGB(220, 30, 60),
-    SliderRail = Color3.fromRGB(40, 10, 18),
-    DropdownFrame = Color3.fromRGB(12, 6, 12),
-    DropdownHolder = Color3.fromRGB(6, 4, 8),
-    DropdownBorder = Color3.fromRGB(100, 10, 25),
-    DropdownOption = Color3.fromRGB(18, 10, 18),
-    Keybind = Color3.fromRGB(18, 10, 18),
-    Input = Color3.fromRGB(10, 6, 10),
-    InputFocused = Color3.fromRGB(6, 3, 6),
-    InputIndicator = Color3.fromRGB(200, 25, 55),
-    Dialog = Color3.fromRGB(8, 5, 10),
-    DialogHolder = Color3.fromRGB(5, 3, 7),
-    DialogHolderLine = Color3.fromRGB(90, 10, 22),
-    DialogButton = Color3.fromRGB(14, 8, 14),
-    DialogButtonBorder = Color3.fromRGB(100, 10, 25),
-    DialogBorder = Color3.fromRGB(100, 10, 25),
-    DialogInput = Color3.fromRGB(10, 6, 10),
-    DialogInputLine = Color3.fromRGB(200, 25, 55),
-    Text = Color3.fromRGB(255, 235, 240),
-    SubText = Color3.fromRGB(180, 100, 115),
-    Hover = Color3.fromRGB(50, 12, 22),
-    HoverChange = 0.05,
-
-    Background = CrimsonRandomBackground,
-    BackgroundTransparency = 0.15,
-
-    ViewportBackground = Color3.fromRGB(10, 5, 8),
-    ViewportBackgroundImages = true,
-    DropdownOutsideWindowBackground = Color3.fromRGB(8, 4, 7),
-    DropdownOutsideWindowBackgroundImages = true,
-    ShineEnabled = true,
-    Shine = {
-        Speed = 0.4,
-        RotationSpeed = 20,
-        ColorSequence = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 5, 20)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 30, 60)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 5, 20)),
-        }),
-    },
-    StrokeShine = true,
-    StrokeDark = Color3.fromRGB(70, 5, 18),
-    ButtonGradient = {
-        Background = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 5, 15)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(18, 3, 8)),
-        }),
-        Stroke = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(160, 20, 45)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(220, 30, 60)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(160, 20, 45)),
-        }),
-    },
-})
 
 -- Reference from Xenovia Quarta (DxD)
 Fluent:RegisterCustomTheme("Azure", {
@@ -247,78 +173,11 @@ Fluent:RegisterCustomTheme("Scarlet", {
     }
 })
 
-Fluent:RegisterCustomTheme("Bloomings", {
-    Accent = Color3.fromRGB(255, 80, 150),
-    AcrylicMain = Color3.fromRGB(40, 15, 30),
-    AcrylicBorder = Color3.fromRGB(200, 60, 120),
-    AcrylicGradient = ColorSequence.new(Color3.fromRGB(60, 20, 45), Color3.fromRGB(25, 8, 18)),
-    AcrylicNoise = 0.90,
-    TitleBarLine = Color3.fromRGB(255, 100, 180),
-    Tab = Color3.fromRGB(50, 18, 38),
-    Element = Color3.fromRGB(55, 22, 42),
-    ElementBorder = Color3.fromRGB(255, 70, 160),
-    InElementBorder = Color3.fromRGB(200, 80, 150),
-    ElementTransparency = 0.92,
-    ToggleSlider = Color3.fromRGB(255, 210, 230),
-    ToggleToggled = Color3.fromRGB(255, 50, 140),
-    SliderRail = Color3.fromRGB(100, 40, 75),
-    DropdownFrame = Color3.fromRGB(45, 18, 35),
-    DropdownHolder = Color3.fromRGB(35, 12, 25),
-    DropdownBorder = Color3.fromRGB(180, 60, 130),
-    DropdownOption = Color3.fromRGB(55, 22, 42),
-    Keybind = Color3.fromRGB(45, 18, 35),
-    Input = Color3.fromRGB(45, 18, 35),
-    InputFocused = Color3.fromRGB(60, 25, 48),
-    InputIndicator = Color3.fromRGB(255, 80, 160),
-    Dialog = Color3.fromRGB(40, 15, 30),
-    DialogHolder = Color3.fromRGB(30, 10, 22),
-    DialogHolderLine = Color3.fromRGB(200, 70, 150),
-    DialogButton = Color3.fromRGB(55, 22, 42),
-    DialogButtonBorder = Color3.fromRGB(200, 70, 160),
-    DialogBorder = Color3.fromRGB(180, 60, 130),
-    DialogInput = Color3.fromRGB(45, 18, 35),
-    DialogInputLine = Color3.fromRGB(255, 80, 160),
-    Text = Color3.fromRGB(255, 240, 248),
-    SubText = Color3.fromRGB(230, 190, 215),
-    Hover = Color3.fromRGB(255, 255, 255),
-    HoverChange = 0.08,
-    Background = "rbxassetid://133541508207801",
-    BackgroundTransparency = 0.12,
-    ViewportBackground = Color3.fromRGB(30, 10, 22),
-    ViewportBackgroundImages = true,
-    DropdownOutsideWindowBackground = Color3.fromRGB(35, 12, 25),
-    DropdownOutsideWindowBackgroundImages = true,
-    ShineEnabled = true,
-    Shine = {
-        Speed = 0.35,
-        RotationSpeed = 15,
-        ColorSequence = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 70, 150)),
-            ColorSequenceKeypoint.new(0.25, Color3.fromRGB(80, 255, 150)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-            ColorSequenceKeypoint.new(0.75, Color3.fromRGB(255, 50, 130)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 70, 150))
-        })
-    },
-    StrokeShine = true,
-    StrokeDark = Color3.fromRGB(80, 30, 60),
-    ButtonGradient = {
-        Background = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(220, 60, 130)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 25, 60))
-        }),
-        Stroke = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 180, 220)),
-            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 100, 180)),
-            ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 70, 150))
-        })
-    }
-})
-
 Window = Fluent:CreateWindow({
     Title = "GoonWares | Murder Mystery 2",
     SubTitle = "Made by: StyearX",
     TabWidth = isMobile and 110 or 130,
+    Version = "Version 1.2",
     Size = isMobile and UDim2.fromOffset(480, 490) or UDim2.fromOffset(580, 560),
     Acrylic = false,
     Theme = "Blood Red",
@@ -495,7 +354,6 @@ Tabs = {
     Visuals = Window:AddTab({ Title = "Visuals", Icon = "camera" }),
     ESP = Window:AddTab({ Title = "Esp", Icon = "eye" }),
     Teleport = Window:AddTab({ Title = "Teleport", Icon = "navigation" }),
-    Troll = Window:AddTab({ Title = "Trolls", Icon = "piggy-bank" }),
     Misc = Window:AddTab({ Title = "Misc", Icon = "star" }),
     Utility = Window:AddTab({ Title = "Utility", Icon = "wrench" }),
     Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
@@ -7496,8 +7354,6 @@ LocalPlayer.CharacterAdded:Connect(function(newCharacter)
     setupCharacter(newCharacter)
 end)
 
-Troll = loadstring(game:HttpGet("https://darahub.pages.dev/Module/Troll-Stuffs.lua"))()
-Troll(Tabs)
 
 secMiscAuto1 = Tabs.Misc:AddSection("Misc", "solar/widget-2-bold")
 secMiscAuto1:AddDivider()
@@ -11299,8 +11155,6 @@ mainopen.MouseButton1Click:Connect(function()
     task.wait(0.3)
     smoothSpeed(90, 0.4)
 end)
-
-FloatingButtonManager:AddButton("OpenUiBtn", mainBtn, false, false, nil, mainBtn)
 
 Notify("GoonWares", "All tabs loaded successfully", "Success", nil, 4)
 
