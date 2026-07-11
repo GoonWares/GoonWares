@@ -49,20 +49,6 @@ task.spawn(function()
 end)
 
 
-local function getPlayerLevel()
-    local player = game:GetService("Players").LocalPlayer
-    local lv = player:GetAttribute("Level") or player:GetAttribute("level")
-        or player:GetAttribute("LVL") or player:GetAttribute("PlayerLevel")
-    if lv then return tostring(lv) end
-    local ls = player:FindFirstChild("leaderstats")
-    if ls then
-        local node = ls:FindFirstChild("Level") or ls:FindFirstChild("level")
-            or ls:FindFirstChild("LVL") or ls:FindFirstChild("XP")
-        if node then return tostring(node.Value) end
-    end
-    return "?"
-end
-
 Fluent:RegisterCustomTheme("Azure", {
     Accent = Color3.fromRGB(50, 150, 255),
     AcrylicMain = Color3.fromRGB(20, 38, 65),
@@ -204,8 +190,8 @@ Fluent:RegisterCustomTheme("Scarlet", {
 Window = Fluent:CreateWindow({
     Title = "GoonWares | Legacy Evade ",
     SubTitle = "Made by: StyearX",
-    TabWidth = isMobile and 130 or 160,
-    Version = "Version 1.2 Evade",
+    TabWidth = isMobile and 110 or 130,
+    Version = "Version 1.2",
     Size = isMobile and UDim2.fromOffset(480, 490) or UDim2.fromOffset(580, 560),
     Acrylic = false,
     Theme = "Blood Red",
@@ -213,7 +199,7 @@ Window = Fluent:CreateWindow({
     Icons = "rbxassetid://139095000385640",
     TitleIcon = "rbxassetid://139095000385640",
     UserInfoTop = true,
-    UserInfoTitle = "Your level is " .. getPlayerLevel(),
+    UserInfoTitle = "Version Legacy",
     UserInfoSubtitle = LocalPlayer.DisplayName,
     MinimizeKey = Enum.KeyCode.LeftControl,
 })
@@ -2676,6 +2662,8 @@ function InvisWallRunCleanAndFix()
     end
 end
 
+InvisWallDescendantConnection = nil
+
 function InvisWallSystem.Enable()
     if InvisWallEnabled then return end
     InvisWallEnabled = true
@@ -2683,11 +2671,22 @@ function InvisWallSystem.Enable()
     InvisWallRunCleanAndFix()
     InvisWallCleanupThread = task.spawn(function()
         while InvisWallEnabled do
-            task.wait(30)
+            task.wait(3)
             if InvisWallEnabled then
                 InvisWallRunCleanAndFix()
             end
         end
+    end)
+    InvisWallDescendantConnection = Workspace.DescendantAdded:Connect(function(obj)
+        if not InvisWallEnabled then return end
+        task.defer(function()
+            if InvisWallEnabled and InvisWallShouldRemove(obj) then
+                pcall(function()
+                    obj:Destroy()
+                    InvisWallProcessedParts[obj] = true
+                end)
+            end
+        end)
     end)
     InvisWallKeybindConnection = UserInputService.InputBegan:Connect(function(input, gpe)
         if gpe then return end
@@ -2702,6 +2701,10 @@ function InvisWallSystem.Disable()
     if InvisWallCleanupThread then
         task.cancel(InvisWallCleanupThread)
         InvisWallCleanupThread = nil
+    end
+    if InvisWallDescendantConnection then
+        InvisWallDescendantConnection:Disconnect()
+        InvisWallDescendantConnection = nil
     end
     if InvisWallKeybindConnection then
         InvisWallKeybindConnection:Disconnect()
@@ -3947,6 +3950,42 @@ SecBhopAutoJump = Tabs.Misc:AddSection("BHOP / Auto Jump", "solar/double-alt-arr
 SecBhopAutoJump:AddSpace({ Height = 20 })
 SecBhopAutoJump:AddDivider()
 
+LegitJumpConnection = nil
+
+SecBhopAutoJump:AddToggle("LegitJumpToggle", {Title = "Legit Jump", Default = false}):OnChanged(function(State)
+    if LegitJumpConnection then
+        LegitJumpConnection:Disconnect()
+        LegitJumpConnection = nil
+    end
+
+    if not State then return end
+
+    LegitJumpConnection = RunService.Heartbeat:Connect(function()
+        local Character = LocalPlayer.Character
+        local Humanoid = Character and Character:FindFirstChildOfClass("Humanoid")
+        local JumpButton = LocalPlayer:FindFirstChild("PlayerGui")
+            and LocalPlayer.PlayerGui:FindFirstChild("TouchGui")
+            and LocalPlayer.PlayerGui.TouchGui:FindFirstChild("TouchControlFrame")
+            and LocalPlayer.PlayerGui.TouchGui.TouchControlFrame:FindFirstChild("JumpButton")
+
+        if not (Humanoid and JumpButton) then return end
+
+        local StateType = Humanoid:GetState()
+        local IsJumping = StateType == Enum.HumanoidStateType.Jumping or StateType == Enum.HumanoidStateType.Freefall
+
+        JumpButton.Image = "rbxasset://textures/ui/Input/TouchControlsSheetV2.png"
+        JumpButton.ImageRectSize = Vector2.new(144, 144)
+
+        if IsJumping then
+            JumpButton.ImageRectOffset = Vector2.new(146, 146)
+        else
+            JumpButton.ImageRectOffset = Vector2.new(1, 146)
+        end
+    end)
+end)
+
+SecBhopAutoJump:AddDivider()
+SecBhopAutoJump:AddSpace({ Height = 20 })
 
 Toggle = SecBhopAutoJump:AddToggle("BHOPToggle", {Title = "BHOP (Button)", Default = false })
 
