@@ -575,7 +575,7 @@ task.spawn(function()
                     if success then
                         Fluent:Notify({
                             Title = "the loser accept ",
-                            Content = "Thank you for supporting GoonWares!",
+                            Content = "Trapss Losersss!",
                             Duration = 3
                         })
                     else

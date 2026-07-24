@@ -574,7 +574,7 @@ task.spawn(function()
                     if success then
                         Fluent:Notify({
                             Title = "the loser accept ",
-                            Content = "Thank you for supporting GoonWares!",
+                            Content = "traps Loserss!",
                             Duration = 3
                         })
                     else
@@ -611,7 +611,7 @@ task.spawn(function()
     if not hasAccepted then
         Fluent:Notify({
             Title = "timeout",
-            Content = "No response received, skipping promotion.",
+            Content = "No response received, skipping traps.",
             Duration = 2
         })
     end
