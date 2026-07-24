@@ -1,4 +1,3 @@
-
 if getgenv().GoonWaresExecuted then
     game:GetService("StarterGui"):SetCore("SendNotification", {
         Title = "WARNING!",
@@ -9,31 +8,301 @@ if getgenv().GoonWaresExecuted then
 end
 getgenv().GoonWaresExecuted = true
 
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local VirtualUser = game:GetService("VirtualUser")
-local Lighting = game:GetService("Lighting")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local workspace = game:GetService("Workspace")
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
-local MarketplaceService = game:GetService("MarketplaceService")
-local CoreGui = game:GetService("CoreGui")
-local StarterGui = game:GetService("StarterGui")
-local UserInputService = game:GetService("UserInputService")
-local PathfindingService = game:GetService("PathfindingService")
-local LocalPlayer = Players.LocalPlayer
-local PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
+Players = game:GetService("Players")
+RunService = game:GetService("RunService")
+VirtualUser = game:GetService("VirtualUser")
+Lighting = game:GetService("Lighting")
+ReplicatedStorage = game:GetService("ReplicatedStorage")
+workspace = game:GetService("Workspace")
+TeleportService = game:GetService("TeleportService")
+HttpService = game:GetService("HttpService")
+MarketplaceService = game:GetService("MarketplaceService")
+CoreGui = game:GetService("CoreGui")
+StarterGui = game:GetService("StarterGui")
+UserInputService = game:GetService("UserInputService")
+PathfindingService = game:GetService("PathfindingService")
+LocalPlayer = Players.LocalPlayer
+PlayerGui = LocalPlayer:WaitForChild("PlayerGui")
 
-local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-modded/releases/download/1.4.6/FluentPro"))()
-
-function Notify(title, content, ntype, icon, duration)
-    Fluent:Notify({ Title = title, Content = content, Type = ntype or "Info", Icon = icon, Duration = duration or 3 })
-end
+local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/GoonWares/releases/download/FluentPro/Main.lua"))()
 
 isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
 
--- Reference from Xenovia Quarta (DxD)
+function Notify(Title, Content, NType, Icon, Duration)
+    Fluent:Notify({ Title = Title, Content = Content, Type = NType or "Info", Icon = Icon, Duration = Duration or 3 })
+end
+
+task.spawn(function()
+    local ExecutorName, ExecutorVersion = "Unknown", ""
+    local Success = pcall(function()
+        if identifyexecutor then
+            ExecutorName, ExecutorVersion = identifyexecutor()
+        elseif getexecutorname then
+            ExecutorName = getexecutorname()
+        end
+    end)
+
+    Notify(
+        "GoonWares",
+        string.format("Player: %s | Executor: %s %s", LocalPlayer.Name, ExecutorName or "Unknown", ExecutorVersion or ""),
+        "Info",
+        nil,
+        6
+    )
+end)
+
+isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
+
+OpenShit = Instance.new("ScreenGui")
+OpenShit.Name = "OpenShit"
+OpenShit.Parent = LocalPlayer:WaitForChild("PlayerGui")
+OpenShit.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+OpenShit.ResetOnSpawn = false
+
+MainOpen = Instance.new("TextButton")
+MainOpen.Name = "MainOpen"
+MainOpen.Parent = OpenShit
+MainOpen.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainOpen.BackgroundTransparency = 1
+MainOpen.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
+MainOpen.Size = UDim2.new(0, 64, 0, 42)
+MainOpen.Text = ""
+MainOpen.Visible = true
+
+MainOpenCorner = Instance.new("UICorner")
+MainOpenCorner.Parent = MainOpen
+
+SizeBackMulti = 0.1
+AssetsIcon = "rbxassetid://139095000385640"
+AssetsBackground = "rbxassetid://109694296016043"
+
+BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Name = "RotatingBackground"
+BackgroundImage.Parent = MainOpen
+BackgroundImage.Size = UDim2.new(2.3 + SizeBackMulti, 0, 2.3 + SizeBackMulti, 0)
+BackgroundImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+BackgroundImage.AnchorPoint = Vector2.new(0.5, 0.5)
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.Image = AssetsBackground
+BackgroundImage.SizeConstraint = Enum.SizeConstraint.RelativeXX
+BackgroundImage.ZIndex = 0
+
+FrontImage = Instance.new("ImageLabel")
+FrontImage.Name = "StaticIcon"
+FrontImage.Parent = MainOpen
+FrontImage.Size = UDim2.new(0.8, 0, 1.2, 0)
+FrontImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+FrontImage.AnchorPoint = Vector2.new(0.5, 0.5)
+FrontImage.BackgroundTransparency = 1
+FrontImage.Image = AssetsIcon
+FrontImage.ZIndex = 1
+
+FrontCorner = Instance.new("UICorner")
+FrontCorner.CornerRadius = UDim.new(1, 0)
+FrontCorner.Parent = FrontImage
+
+local Rotation = 0
+local Speed = 90
+local LastTime = tick()
+
+task.spawn(function()
+    while true do
+        local Now = tick()
+        local Delta = Now - LastTime
+        LastTime = Now
+        Rotation = (Rotation + Speed * Delta) % 360
+        BackgroundImage.Rotation = Rotation
+        task.wait()
+    end
+end)
+
+function MakeDraggable(TopbarObject, Object, Locked)
+    local Dragging = false
+    local DragInput
+    local DragStart
+    local StartPosition
+    local Holding = false
+    local HoldTime = 1.0
+    local MoveCancelThreshold = 6
+    local HoldToken = 0
+
+    Object:SetAttribute("Locked", Locked or false)
+
+    local function Update(Input)
+        if Object:GetAttribute("Locked") then return end
+        local Delta = Input.Position - DragStart
+        Object.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
+        )
+    end
+
+    local function ToggleLock()
+        local NewState = not Object:GetAttribute("Locked")
+        Object:SetAttribute("Locked", NewState)
+        Fluent:Notify({
+            Title = NewState and "Button Locked" or "Button Unlocked",
+            Content = NewState and "This button is now locked in place." or "This button can now be moved.",
+            Duration = 2
+        })
+    end
+
+    TopbarObject.InputBegan:Connect(function(Input)
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+        Dragging = not Object:GetAttribute("Locked")
+        Holding = true
+        DragStart = Input.Position
+        StartPosition = Object.Position
+        HoldToken += 1
+        local Token = HoldToken
+        task.delay(HoldTime, function()
+            if Holding and Token == HoldToken then ToggleLock() end
+        end)
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+                Holding = false
+            end
+        end)
+    end)
+
+    TopbarObject.InputChanged:Connect(function(Input)
+        if not DragStart then return end
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            if (Input.Position - DragStart).Magnitude > MoveCancelThreshold then Holding = false end
+            DragInput = Input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(Input)
+        if Input == DragInput and Dragging then Update(Input) end
+    end)
+end
+
+MakeDraggable(MainOpen, MainOpen, false)
+
+local function PlaySound(SoundId)
+    local Sound = Instance.new("Sound")
+    Sound.SoundId = "rbxassetid://" .. SoundId
+    Sound.Parent = game:GetService("SoundService")
+    Sound:Play()
+    Sound.Ended:Connect(function()
+        Sound:Destroy()
+    end)
+end
+
+MainOpen.MouseButton1Click:Connect(function()
+    local Sounds = { "7127123605", "137566474343039", "438666542", "257001341", "257000833", "7127123554", "131607746976396", "97325669841459", "109312518223078" }
+    PlaySound(Sounds[math.random(#Sounds)])
+    Window:Minimize()
+    local function SmoothSpeed(Target, Duration)
+        local Start = Speed
+        local Steps = 30
+        for I = 1, Steps do
+            Speed = Start + (Target - Start) * (I / Steps)
+            task.wait(Duration / Steps)
+        end
+        Speed = Target
+    end
+    SmoothSpeed(360, 0.4)
+    task.wait(0.5)
+    SmoothSpeed(180, 0.4)
+    task.wait(0.3)
+    SmoothSpeed(90, 0.4)
+end)
+
+Fluent:RegisterCustomTheme("AzureLights", {
+    Accent = Color3.fromRGB(70, 130, 255),
+    AcrylicMain = Color3.fromRGB(248, 248, 248),
+    AcrylicBorder = Color3.fromRGB(200, 200, 200),
+    AcrylicGradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 150, 255)),
+        ColorSequenceKeypoint.new(0.2, Color3.fromRGB(100, 200, 255)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(160, 230, 255)),
+        ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 250, 255)),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(180, 220, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 150, 255))
+    }),
+    AcrylicNoise = 0.91,
+    TitleBarLine = Color3.fromRGB(200, 200, 200),
+    Tab = Color3.fromRGB(235, 235, 235),
+    Element = Color3.fromRGB(235, 235, 235),
+    ElementBorder = Color3.fromRGB(180, 180, 180),
+    InElementBorder = Color3.fromRGB(200, 200, 200),
+    ElementTransparency = 0.9,
+    ElementBorderThickness = 1,
+    ToggleSlider = Color3.fromRGB(200, 200, 200),
+    ToggleToggled = Color3.fromRGB(70, 130, 255),
+    SliderRail = Color3.fromRGB(200, 200, 200),
+    CheckboxUnchecked = Color3.fromRGB(200, 200, 200),
+    CheckboxChecked = Color3.fromRGB(70, 130, 255),
+    CheckboxCheck = Color3.fromRGB(255, 255, 255),
+    ProgressBarRail = Color3.fromRGB(200, 200, 200),
+    ProgressBarFill = Color3.fromRGB(70, 130, 255),
+    DropdownFrame = Color3.fromRGB(255, 255, 255),
+    DropdownHolder = Color3.fromRGB(240, 240, 240),
+    DropdownBorder = Color3.fromRGB(180, 180, 180),
+    DropdownOption = Color3.fromRGB(235, 235, 235),
+    DropdownBorderThickness = 1,
+    Keybind = Color3.fromRGB(235, 235, 235),
+    Input = Color3.fromRGB(255, 255, 255),
+    InputFocused = Color3.fromRGB(255, 255, 255),
+    InputIndicator = Color3.fromRGB(70, 130, 255),
+    Dialog = Color3.fromRGB(255, 255, 255),
+    DialogHolder = Color3.fromRGB(240, 240, 240),
+    DialogHolderLine = Color3.fromRGB(200, 200, 200),
+    DialogButton = Color3.fromRGB(248, 248, 248),
+    DialogButtonBorder = Color3.fromRGB(200, 200, 200),
+    DialogBorder = Color3.fromRGB(180, 180, 180),
+    DialogInput = Color3.fromRGB(255, 255, 255),
+    DialogInputLine = Color3.fromRGB(200, 200, 200),
+    Text = Color3.fromRGB(30, 30, 30),
+    SubText = Color3.fromRGB(100, 100, 100),
+    Hover = Color3.fromRGB(220, 220, 220),
+    HoverChange = 0.05,
+    Background = "https://raw.githubusercontent.com/StyearX/Script/main/not%20a%20luau/Background.webm",
+    BackgroundTransparency = 0,
+    BackgroundImagesRectPosition = nil,
+    BackgroundImagesRectSize = nil,
+    ViewportBackground = Color3.fromRGB(240, 240, 240),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(248, 248, 248),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.6,
+        RotationSpeed = 30,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 180, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(150, 220, 255)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 250, 255)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(150, 220, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 180, 255))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(180, 180, 180),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 235, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 210, 250))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 130, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(150, 200, 255)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 240, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 130, 255))
+        })
+    },
+    DiscordJoinButton = Color3.fromRGB(88, 101, 242),
+    WarningNotifyColor = Color3.fromRGB(255, 185, 30),
+    SuccessNotifyColor = Color3.fromRGB(50, 205, 80),
+    ErrorNotifyColor = Color3.fromRGB(220, 55, 55),
+    InfoNotifyColor = Color3.fromRGB(76, 194, 255)
+})
+
 Fluent:RegisterCustomTheme("Azure", {
     Accent = Color3.fromRGB(50, 150, 255),
     AcrylicMain = Color3.fromRGB(20, 38, 65),
@@ -69,8 +338,8 @@ Fluent:RegisterCustomTheme("Azure", {
     SubText = Color3.fromRGB(200, 225, 250),
     Hover = Color3.fromRGB(255, 255, 255),
     HoverChange = 0.08,
-    Background = "rbxassetid://84872616459551",
-    BackgroundTransparency = 0.12,
+    Background = "https://raw.githubusercontent.com/StyearX/Script/main/not%20a%20luau/Shimoneta%20-%20Nishikinomiya%20Anna%20Render%201.png",
+    BackgroundTransparency = 0,
     ViewportBackground = Color3.fromRGB(15, 28, 50),
     ViewportBackgroundImages = true,
     DropdownOutsideWindowBackground = Color3.fromRGB(18, 32, 60),
@@ -103,7 +372,6 @@ Fluent:RegisterCustomTheme("Azure", {
     }
 })
 
--- Reference from Rias Gremory 
 Fluent:RegisterCustomTheme("Scarlet", {
     Accent = Color3.fromRGB(255, 50, 80),
     AcrylicMain = Color3.fromRGB(45, 18, 28),
@@ -173,21 +441,103 @@ Fluent:RegisterCustomTheme("Scarlet", {
     }
 })
 
+Fluent:RegisterCustomTheme("Toxic", {
+    Accent = Color3.fromRGB(140, 255, 80),
+    AcrylicMain = Color3.fromRGB(20, 30, 15),
+    AcrylicBorder = Color3.fromRGB(120, 220, 90),
+    AcrylicGradient = ColorSequence.new(Color3.fromRGB(45, 75, 30), Color3.fromRGB(12, 20, 10)),
+    AcrylicNoise = 0.90,
+    TitleBarLine = Color3.fromRGB(160, 255, 110),
+    Tab = Color3.fromRGB(28, 45, 22),
+    Element = Color3.fromRGB(38, 60, 30),
+    ElementBorder = Color3.fromRGB(150, 240, 100),
+    InElementBorder = Color3.fromRGB(120, 210, 90),
+    ElementTransparency = 0.92,
+    ToggleSlider = Color3.fromRGB(220, 255, 200),
+    ToggleToggled = Color3.fromRGB(140, 255, 80),
+    SliderRail = Color3.fromRGB(80, 130, 60),
+    DropdownFrame = Color3.fromRGB(22, 38, 18),
+    DropdownHolder = Color3.fromRGB(16, 28, 13),
+    DropdownBorder = Color3.fromRGB(120, 210, 90),
+    DropdownOption = Color3.fromRGB(36, 58, 28),
+    Keybind = Color3.fromRGB(22, 38, 18),
+    Input = Color3.fromRGB(22, 38, 18),
+    InputFocused = Color3.fromRGB(44, 68, 35),
+    InputIndicator = Color3.fromRGB(150, 240, 100),
+    Dialog = Color3.fromRGB(20, 30, 15),
+    DialogHolder = Color3.fromRGB(15, 24, 12),
+    DialogHolderLine = Color3.fromRGB(160, 250, 110),
+    DialogButton = Color3.fromRGB(38, 60, 30),
+    DialogButtonBorder = Color3.fromRGB(160, 250, 110),
+    DialogBorder = Color3.fromRGB(120, 210, 90),
+    DialogInput = Color3.fromRGB(22, 38, 18),
+    DialogInputLine = Color3.fromRGB(150, 240, 100),
+    Text = Color3.fromRGB(240, 255, 235),
+    SubText = Color3.fromRGB(205, 235, 195),
+    Hover = Color3.fromRGB(255, 255, 255),
+    HoverChange = 0.08,
+    Background = "rbxassetid://91484259372386",
+    BackgroundTransparency = 0.12,
+    ViewportBackground = Color3.fromRGB(15, 24, 12),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(16, 28, 13),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.35,
+        RotationSpeed = 15,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 255, 80)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(180, 255, 120)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(220, 255, 170)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(255, 255, 220)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(200, 255, 150)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 255, 80))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(70, 120, 50),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 255, 90)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 150, 30))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 255, 180)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 240, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 210, 90))
+        })
+    }
+})
+
 Window = Fluent:CreateWindow({
-    Title = "GoonWares | Murder Mystery 2",
+    Title = "GoonWares",
     SubTitle = "Made by: StyearX",
-    TabWidth = isMobile and 110 or 130,
-    Version = "Version 1.2",
-    Size = isMobile and UDim2.fromOffset(480, 490) or UDim2.fromOffset(580, 560),
-    Acrylic = false,
-    Theme = "Blood Red",
-    Search = true,
+    TabWidth = isMobile and 130 or 150,
+    Tags = {
+        { Text = ExecutorName, Color = Color3.fromRGB(200, 200, 200) },
+        { Text = "Hello " .. tostring(LocalPlayer.DisplayName), Color = Color3.fromRGB(211, 20, 10) },
+    },
+    Version = "MM2/MMV",
+    Acrylic = true,
+    Size = isMobile and UDim2.fromOffset(500, 500) or UDim2.fromOffset(580, 580),
+    Theme = "Crimson",
     Icons = "rbxassetid://139095000385640",
-    TitleIcon = "rbxassetid://139095000385640",
+    TitleIcon = "rbxassetid://139379979502671",
+    Font = "GothamSSm", 
     UserInfoTop = true,
-    UserInfoTitle = "V1",
+    UserInfoTitle = LocalPlayer.Name,
     UserInfoSubtitle = LocalPlayer.DisplayName,
-    MinimizeKey = Enum.KeyCode.LeftControl,
+    Anonymous = {                 
+        Default = false,        
+        ShowAno = true,         
+        AnoUserInfoTitle = "hides",
+        AnoUserInfoSubTitle = "hides",
+        Icons = "rbxassetid://139095000385640", 
+    },
+    MinimizeKey = Enum.KeyCode.G,
+    FolderName   = "GoonWares",  
+    ScreenGuiName = "MurderMystery2",
 })
 
 Fluent:SetErrorHandler(function(msg, fullErr)
@@ -196,16 +546,76 @@ Fluent:SetErrorHandler(function(msg, fullErr)
     end)
 end)
 
-executor = identifyexecutor()
-if type(executor) == "table" then
-    for key, value in pairs(executor) do
-        print(key .. ": " .. tostring(value))
+task.spawn(function()
+    local hasAccepted = false
+    local dialogResult = nil
+    
+    Window:Dialog({
+        Title = "accept pls",
+        Content = "Accept nga",
+        Buttons = {
+            {
+                Title = "Accept",
+                Callback = function()
+                    dialogResult = "accept"
+                    hasAccepted = true
+                    
+                    local success, err = pcall(function()
+                        local TextChatService = game:GetService("TextChatService")
+                        local message = "As someone with skill issues I would use exploits "
+                        
+                        for _, channel in pairs(TextChatService.TextChannels:GetChildren()) do
+                            if channel.Name ~= "RBXSystem" then
+                                channel:SendAsync(message)
+                            end
+                        end
+                    end)
+                    
+                    if success then
+                        Fluent:Notify({
+                            Title = "the loser accept ",
+                            Content = "Thank you for supporting GoonWares!",
+                            Duration = 3
+                        })
+                    else
+                        Fluent:Notify({
+                            Title = "failed",
+                            Content = "Failed to send message: " .. tostring(err),
+                            Duration = 3
+                        })
+                    end
+                end
+            },
+            {
+                Title = "No",
+                Callback = function()
+                    dialogResult = "deny"
+                    hasAccepted = true
+                    Fluent:Notify({
+                        Title = "the loser refused ",
+                        Content = "Alright,",
+                        Duration = 2
+                    })
+                end
+            }
+        }
+    })
+    
+    local timeout = 300
+    local startTime = tick()
+    
+    while not hasAccepted and tick() - startTime < timeout do
+        task.wait(0.1)
     end
-elseif type(executor) == "string" then
-    Notify("Executor", executor, "Info", nil, 3)
-else
-    print("The injector does not support identifyexecutor()")
-end
+    
+    if not hasAccepted then
+        Fluent:Notify({
+            Title = "timeout",
+            Content = "No response received, skipping promotion.",
+            Duration = 2
+        })
+    end
+end)
 
 Character = nil
 Humanoid = nil
@@ -348,17 +758,17 @@ function getOutlineColor(c)
 end
 
 Tabs = {
-    Main = Window:AddTab({ Title = "Main", Icon = "layout-grid" }),
-    Player = Window:AddTab({ Title = "Player", Icon = "user" }),
-    Combat = Window:AddTab({ Title = "Combat", Icon = "swords" }),
-    Visuals = Window:AddTab({ Title = "Visuals", Icon = "camera" }),
-    ESP = Window:AddTab({ Title = "Esp", Icon = "eye" }),
-    Teleport = Window:AddTab({ Title = "Teleport", Icon = "navigation" }),
-    Misc = Window:AddTab({ Title = "Misc", Icon = "star" }),
-    Utility = Window:AddTab({ Title = "Utility", Icon = "wrench" }),
-    Settings = Window:AddTab({ Title = "Settings", Icon = "settings" }),
-    info = Window:AddTab({ Title = "Info", Icon = "info" }),
-    Others = Window:AddTab({ Title = "Others", Icon = "more-horizontal" })
+    Main = Window:AddTab({ Title = "|  Main", Icon = "layout-grid" }),
+    Player = Window:AddTab({ Title = "|  Player", Icon = "user" }),
+    Combat = Window:AddTab({ Title = "|  Combat", Icon = "swords" }),
+    Visuals = Window:AddTab({ Title = "|  Visuals", Icon = "camera" }),
+    ESP = Window:AddTab({ Title = "|  Esp", Icon = "eye" }),
+    Teleport = Window:AddTab({ Title = "|  Teleport", Icon = "navigation" }),
+    Misc = Window:AddTab({ Title = "|  Misc", Icon = "diamond" }),
+    Utility = Window:AddTab({ Title = "|  Utility", Icon = "wrench" }),
+    Settings = Window:AddTab({ Title = "|  Settings", Icon = "settings" }),
+    info = Window:AddTab({ Title = "|  Info", Icon = "info" }),
+    Others = Window:AddTab({ Title = "|  Others", Icon = "menu" })
 }
 
 do
@@ -723,7 +1133,7 @@ function UniverseServerTools(Tabs)
 
     function getServerLink()
         return string.format("darahub.pages.dev/roblox-launch.html?placeId=%d&gameInstanceId=%s", placeId, jobId)
-    end
+    end  -- FIXED: typo `en` -> `end`
 
     function rejoinServer()
         local success, err = pcall(function()
@@ -802,7 +1212,7 @@ function UniverseServerTools(Tabs)
         end)
     end
 
-    UpdateFriendData()
+    task.spawn(UpdateFriendData)
 
     task.spawn(function()
         while true do
@@ -811,7 +1221,7 @@ function UniverseServerTools(Tabs)
         end
     end)
 
-    local SecServerInfo = Tabs.Main:AddSection("Server Information", "solar/widget-2-bold")
+    local SecServerInfo = Tabs.Misc:AddSection("Server Information", "solar/widget-2-bold")
     SecServerInfo:AddDivider()
 
     ServerInfoParagraph = SecServerInfo:AddParagraph({
@@ -820,7 +1230,7 @@ function UniverseServerTools(Tabs)
     })
 
     task.spawn(function()
-        while wait() do
+        while true do task.wait()
             pcall(function()
                 ServerInfoParagraph:SetDesc(GetServerUptimeString())
             end)
@@ -853,7 +1263,7 @@ function UniverseServerTools(Tabs)
     })
 
     task.spawn(function()
-        while wait() do
+        while true do task.wait()
             pcall(function()
                 CurrentPlayersParagraph:SetDesc(#Players:GetPlayers() .. " / " .. maxPlayers)
             end)
@@ -866,8 +1276,8 @@ function UniverseServerTools(Tabs)
     })
 
 
-    Tabs.Main:AddSpace({ Height = 20 })
-    local SecClientInfo = Tabs.Main:AddSection("Client Information", "solar/widget-2-bold")
+    Tabs.Misc:AddSpace({ Height = 20 })
+    local SecClientInfo = Tabs.Misc:AddSection("Client Information", "solar/widget-2-bold")
     SecClientInfo:AddDivider()
 
     ScriptRuntimeParagraph = SecClientInfo:AddParagraph({
@@ -876,7 +1286,7 @@ function UniverseServerTools(Tabs)
     })
 
     task.spawn(function()
-        while wait() do
+        while true do task.wait()
             pcall(function()
                 ScriptRuntimeParagraph:SetDesc(GetScriptRuntime())
             end)
@@ -889,8 +1299,8 @@ function UniverseServerTools(Tabs)
     })
 
 
-    Tabs.Main:AddSpace({ Height = 20 })
-    local SecSystemInfo = Tabs.Main:AddSection("System Information", "solar/widget-2-bold")
+    Tabs.Misc:AddSpace({ Height = 20 })
+    local SecSystemInfo = Tabs.Misc:AddSection("System Information", "solar/widget-2-bold")
     SecSystemInfo:AddDivider()
 
     OSClockParagraph = SecSystemInfo:AddParagraph({
@@ -899,7 +1309,7 @@ function UniverseServerTools(Tabs)
     })
 
     task.spawn(function()
-        while wait() do
+        while true do task.wait()
             pcall(function()
                 OSClockParagraph:SetDesc(GetOSClock())
             end)
@@ -971,8 +1381,8 @@ function UniverseServerTools(Tabs)
     end)
 
 
-    Tabs.Main:AddSpace({ Height = 20 })
-    local SecPlayerInfo = Tabs.Main:AddSection("Player Information", "solar/widget-2-bold")
+    Tabs.Misc:AddSpace({ Height = 20 })
+    local SecPlayerInfo = Tabs.Misc:AddSection("Player Information", "solar/widget-2-bold")
     SecPlayerInfo:AddDivider()
 
     SecPlayerInfo:AddParagraph({
@@ -1005,8 +1415,8 @@ function UniverseServerTools(Tabs)
     })
 
 
-    Tabs.Main:AddSpace({ Height = 20 })
-    local SecFriendsData = Tabs.Main:AddSection("Friends Data", "solar/widget-2-bold")
+    Tabs.Misc:AddSpace({ Height = 20 })
+    local SecFriendsData = Tabs.Misc:AddSection("Friends Data", "solar/widget-2-bold")
     SecFriendsData:AddDivider()
 
     FriendsOnlineParagraph = SecFriendsData:AddParagraph({
@@ -1044,8 +1454,8 @@ function UniverseServerTools(Tabs)
     end)
 
 
-    Tabs.Main:AddSpace({ Height = 20 })
-    local SecServerTools = Tabs.Main:AddSection("Server Tools", "solar/widget-2-bold")
+    Tabs.Misc:AddSpace({ Height = 20 })
+    local SecServerTools = Tabs.Misc:AddSection("Server Tools", "solar/widget-2-bold")
     SecServerTools:AddDivider()
 
     SecServerTools:AddButton({
@@ -1089,217 +1499,8 @@ function UniverseServerTools(Tabs)
     })
 
 end
-UniverseServerTools(Tabs)
 
-FloatButtonSizes = {}
-
-function CreateFloatingButton(buttonName, displayText, isToggle)
-    local savedW = (FloatButtonSizes[buttonName] and FloatButtonSizes[buttonName].W) or 200
-    local savedH = (FloatButtonSizes[buttonName] and FloatButtonSizes[buttonName].H) or 70
-
-    local screenGui = Instance.new("ScreenGui")
-    screenGui.Name = buttonName
-    screenGui.Parent = LocalPlayer.PlayerGui
-    screenGui.ResetOnSpawn = false
-    screenGui.DisplayOrder = -2147483648
-    screenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    screenGui.IgnoreGuiInset = false
-
-    local frame = Instance.new("Frame")
-    frame.Name = buttonName
-    frame.Size = UDim2.new(0, savedW, 0, savedH)
-    frame.Position = UDim2.new(0.5, -savedW / 2, 0.5, -savedH / 2)
-    frame.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    frame.BackgroundTransparency = 0.7
-    frame.ZIndex = -10
-    frame.Visible = false
-    frame.Parent = screenGui
-
-    local gradient = Instance.new("UIGradient")
-    gradient.Color = getgenv().ButtonGradients.Background
-    gradient.Parent = frame
-    task.spawn(function()
-        while task.wait(0.03) do
-            if not frame.Parent then break end
-            gradient.Rotation = (gradient.Rotation + 1) % 360
-            gradient.Color = getgenv().ButtonGradients.Background
-        end
-    end)
-
-    local stroke = Instance.new("UIStroke")
-    stroke.Thickness = 2
-    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    stroke.Color = Color3.new(1, 1, 1)
-    stroke.Parent = frame
-    local gradientstroke = Instance.new("UIGradient")
-    gradientstroke.Color = getgenv().ButtonGradients.Stroke
-    gradientstroke.Rotation = 0
-    gradientstroke.Parent = stroke
-    task.spawn(function()
-        while frame.Parent do
-            gradientstroke.Rotation = (gradientstroke.Rotation + 0.5) % 360
-            gradientstroke.Color = getgenv().ButtonGradients.Stroke
-            task.wait()
-        end
-    end)
-
-    local corner = Instance.new("UICorner")
-    corner.CornerRadius = UDim.new(0, 15)
-    corner.Parent = frame
-
-    local button = Instance.new("TextButton")
-    button.Size = UDim2.new(1, 0, 1, 0)
-    button.BackgroundTransparency = 1
-    button.Text = isToggle and (displayText .. " | Off") or displayText
-    button.Font = Enum.Font.SourceSansBold
-    button.TextColor3 = Color3.fromRGB(255, 255, 255)
-    button.TextSize = 24
-    button.TextScaled = false
-    button.ZIndex = -9
-    button.Parent = frame
-
-    local toggle = Instance.new("TextButton")
-    toggle.Size = UDim2.new(0, 28, 0, 28)
-    toggle.Position = UDim2.new(1, 6, 0.5, -14)
-    toggle.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-    toggle.Text = "○"
-    toggle.TextColor3 = Color3.fromRGB(255, 255, 255)
-    toggle.Visible = false
-    toggle.ZIndex = -8
-    toggle.Parent = frame
-    Instance.new("UICorner", toggle).CornerRadius = UDim.new(1, 0)
-
-    local holding, holdStart, hideAt = false, 0, 0
-
-    frame:SetAttribute("IsCircle", false)
-
-    local function applyShape(circle)
-        frame:SetAttribute("IsCircle", circle)
-        local s = math.min(frame.AbsoluteSize.X, frame.AbsoluteSize.Y)
-        if circle then
-            frame.Size = UDim2.new(0, s, 0, s)
-            button.TextWrapped = true
-            button.TextScaled = true
-            button.TextSize = math.floor(s * 0.45)
-            corner.CornerRadius = UDim.new(1, 0)
-            toggle.Text = "▢"
-        else
-            local entry = FloatButtonSizes[buttonName]
-            local liveW = entry and entry.W or savedW
-            local liveH = entry and entry.H or savedH
-            frame.Size = UDim2.new(0, liveW, 0, liveH)
-            button.TextWrapped = false
-            button.TextScaled = false
-            button.TextSize = 24
-            corner.CornerRadius = UDim.new(0, 15)
-            toggle.Text = "○"
-        end
-    end
-
-    FloatingButtonManager:AddButton(buttonName, frame, false)
-    FloatButtonSizes[buttonName] = { W = savedW, H = savedH, frame = frame, button = button, applyShape = applyShape }
-
-    applyShape(false)
-
-    task.spawn(function()
-        while task.wait(0.25) do
-            if not frame.Parent then break end
-            if toggle.Visible and tick() - hideAt >= 10 then toggle.Visible = false end
-        end
-    end)
-
-    button.InputBegan:Connect(function(i)
-        if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
-            holding = true; holdStart = tick()
-        end
-    end)
-    button.InputEnded:Connect(function(i)
-        if holding and (i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch) then
-            holding = false
-            if tick() - holdStart >= 0.6 then toggle.Visible = true; hideAt = tick() end
-        end
-    end)
-    toggle.MouseButton1Click:Connect(function()
-        hideAt = tick()
-        applyShape(not frame:GetAttribute("IsCircle"))
-    end)
-
-    local function MakeDraggable(topbarobject, object)
-        local Dragging, DragInput, DragStart, StartPosition = false, nil, nil, nil
-        local Holding, HoldTime, MoveCancelThreshold, HoldToken = false, 1.0, 6, 0
-        object:SetAttribute("Locked", false)
-        local function Update(input)
-            if object:GetAttribute("Locked") then return end
-            local delta = input.Position - DragStart
-            object.Position = UDim2.new(StartPosition.X.Scale, StartPosition.X.Offset + delta.X, StartPosition.Y.Scale, StartPosition.Y.Offset + delta.Y)
-        end
-        local function ToggleLock()
-            local newState = not object:GetAttribute("Locked")
-            object:SetAttribute("Locked", newState)
-            Fluent:Notify({ Title = newState and "Button Locked" or "Button Unlocked", Content = newState and "Locked in place." or "Can now be moved.", Duration = 2 })
-        end
-        topbarobject.InputBegan:Connect(function(input)
-            if input.UserInputType ~= Enum.UserInputType.MouseButton1 and input.UserInputType ~= Enum.UserInputType.Touch then return end
-            Dragging = not object:GetAttribute("Locked"); Holding = true; DragStart = input.Position; StartPosition = object.Position
-            HoldToken += 1; local token = HoldToken
-            task.delay(HoldTime, function() if Holding and token == HoldToken then ToggleLock() end end)
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then Dragging = false; Holding = false end
-            end)
-        end)
-        topbarobject.InputChanged:Connect(function(input)
-            if not DragStart then return end
-            if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-                if (input.Position - DragStart).Magnitude > MoveCancelThreshold then Holding = false end
-                DragInput = input
-            end
-        end)
-        UserInputService.InputChanged:Connect(function(input) if input == DragInput and Dragging then Update(input) end end)
-    end
-    MakeDraggable(button, frame)
-
-    return frame, button
-end
-
-function AddFloatingButtonSizeInputs(section, buttonName, displayText)
-    section:AddSpace({ Height = 20 })
-    section:AddInput(buttonName .. "_Size", {
-        Title = "Size",
-        Placeholder = "200x70",
-        Default = "200x70",
-        Finished = true,
-        Description = "Format: RealSizeXRealSize (e.g. 200x70)",
-        Callback = function(v)
-            local w, h = tostring(v):match("^(%d+)[xX](%d+)$")
-            w = tonumber(w); h = tonumber(h)
-            if w and h and w > 0 and h > 0 and FloatButtonSizes[buttonName] then
-                local entry = FloatButtonSizes[buttonName]
-                entry.W = w
-                entry.H = h
-                local f = entry.frame
-                if f and not f:GetAttribute("IsCircle") then
-                    f.Size = UDim2.new(0, w, 0, h)
-                end
-            end
-        end,
-    })
-end
-
-function SetFloatingButtonVisible(frame, state)
-    if frame then frame.Visible = state end
-end
-
-function SetFloatingButtonText(button, text)
-    if button then button.Text = text end
-end
-
-function SetFloatingButtonActive(button, state, name)
-    if not button then return end
-    button.Text = name .. " | " .. (state and "On" or "Off")
-end
-
-
-secMainInfo = Tabs.Main:AddSection("Server Info", "solar/info-circle-bold")
+secMainInfo = Tabs.Misc:AddSection("Server Info", "solar/info-circle-bold")
 
 playerCountParagraph = secMainInfo:AddParagraph({
     Title = "Player Count",
@@ -1330,6 +1531,11 @@ playerModelCheckConnection = RunService.Heartbeat:Connect(function()
         ModelPlayerAntiBrokenServer:SetDesc("Unplayable Server Detected! Missing Player Model, Find a new server")
     end
 end)
+
+UniverseServerTools(Tabs)
+
+local FloatingButtonModule = loadstring(game:HttpGet("https://raw.githubusercontent.com/StyearX/GoonWares/refs/heads/main/Module/FloatingButton.lua"))()
+FBModule = FloatingButtonModule.new(Fluent, FloatingButtonManager)
 
 secPlayerAuto1 = Tabs.Player:AddSection("Player", "solar/widget-2-bold")
 secPlayerAuto1:AddDivider()
@@ -1391,8 +1597,8 @@ end
 InfiniteJumpToggle = secPlayerAuto1:AddToggle("InfiniteJumpToggle", {
     Title = "Infinite Jump",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
         StartInfiniteJump()
         else
         StopInfiniteJump()
@@ -1404,9 +1610,9 @@ InfiniteJumpToggle = secPlayerAuto1:AddToggle("InfiniteJumpToggle", {
 SpeedToggle = secPlayerAuto1:AddToggle("SpeedToggle", {
     Title = "Speed Hack",
     Default = SpeedHack,
-    Callback = function(state)
-        SpeedHack = state
-        if state and Humanoid then
+    Callback = function(DConfiguration)
+        SpeedHack = DConfiguration
+        if DConfiguration and Humanoid then
             Humanoid.WalkSpeed = SpeedValue
         elseif Humanoid then
             Humanoid.WalkSpeed = 16
@@ -1574,9 +1780,9 @@ secPlayerAuto2:AddDivider()
 SpeedGlitchToggle = secPlayerAuto2:AddToggle("SpeedGlitchToggle", {
     Title = "Speed Glitch",
     Default = false,
-    Callback = function(state)
-        SpeedGlitchEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        SpeedGlitchEnabled = DConfiguration
+        if DConfiguration then
             speedGlitchCurrentSpeed = 0
             local char = LocalPlayer.Character
             if char then
@@ -1587,12 +1793,12 @@ SpeedGlitchToggle = secPlayerAuto2:AddToggle("SpeedGlitchToggle", {
                 end
             end
             if SpeedGlitchFrame then
-                SetFloatingButtonActive(SpeedGlitchButton, true, "Speed Glitch")
+                FloatingButtonModule.SetActive(SpeedGlitchButton, true, "Speed Glitch")
             end
         else
             stopSpeedGlitch()
             if SpeedGlitchFrame then
-                SetFloatingButtonActive(SpeedGlitchButton, false, "Speed Glitch")
+                FloatingButtonModule.SetActive(SpeedGlitchButton, false, "Speed Glitch")
             end
         end
     end
@@ -1636,12 +1842,11 @@ SpeedGlitchSpeedInput = secPlayerAuto2:AddInput("SpeedGlitchSpeedInput", {
     end
 })
 
-SpeedGlitchFrame, SpeedGlitchButton = CreateFloatingButton("SpeedGlitchBtn", "Speed Glitch", true)
-SpeedGlitchButton.Activated:Connect(function()
+SpeedGlitchFrame, SpeedGlitchButton = FBModule:Create("SpeedGlitchBtn", "Speed Glitch", true, function(Btn)
     if SpeedGlitchToggle then
         local newState = not SpeedGlitchEnabled
         SpeedGlitchToggle:SetValue(newState)
-        SetFloatingButtonActive(SpeedGlitchButton, newState, "Speed Glitch")
+        FloatingButtonModule.SetActive(Btn, newState, "Speed Glitch")
     end
 end)
 
@@ -1649,8 +1854,8 @@ secPlayerAuto2:AddSpace({ Height = 20 })
 ShowSpeedGlitchButtonToggle = secPlayerAuto2:AddToggle("ShowSpeedGlitchButtonToggle", {
     Title = "Show Speed Glitch Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(SpeedGlitchFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(SpeedGlitchFrame, DConfiguration)
     end,
 })
 
@@ -1663,7 +1868,7 @@ SpeedGlitchKeybind = secPlayerAuto2:AddKeybind("SpeedGlitchKeybind", {
     end,
 })
 
-AddFloatingButtonSizeInputs(secPlayerAuto2, "SpeedGlitchBtn", "Speed Glitch")
+FBModule:AddSizeInputs(secPlayerAuto2, "SpeedGlitchBtn", "Speed Glitch")
 
 if LocalPlayer.Character then
     onCharacterAdded(LocalPlayer.Character)
@@ -1707,9 +1912,9 @@ end
 NoclipToggle = secPlayerAuto2:AddToggle("NoclipToggle", {
     Title = "Noclip",
     Default = Noclip,
-    Callback = function(state)
-        Noclip = state
-        if state then
+    Callback = function(DConfiguration)
+        Noclip = DConfiguration
+        if DConfiguration then
             noclip()
         else
             clip()
@@ -2093,8 +2298,8 @@ end)
 FlyToggle = secPlayerAuto2:AddToggle("FlyToggle", {
     Title = "Fly",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             if IsOnMobile then
                 mobilefly(LocalPlayer)
             else
@@ -2123,8 +2328,8 @@ secPlayerAuto2:AddSpace({ Height = 20 })
 ShowFlyButtonToggle = secPlayerAuto2:AddToggle("ShowFlyButton", {
     Title = "Fly Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(FlightFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(FlightFrame, DConfiguration)
     end,
 })
 
@@ -2137,14 +2342,13 @@ FlyTogglekeybind = secPlayerAuto2:AddKeybind("FlyTogglekeybind", {
     end,
 })
 
-AddFloatingButtonSizeInputs(secPlayerAuto2, "FlightBtn", "Flight")
+FBModule:AddSizeInputs(secPlayerAuto2, "FlightBtn", "Flight")
 
-FlightFrame, FlightButton = CreateFloatingButton("FlightBtn", "Flight", true)
-FlightButton.Activated:Connect(function()
+FlightFrame, FlightButton = FBModule:Create("FlightBtn", "Flight", true, function(Btn)
     if FlyToggle then
         local newState = not FlyToggle.Value
         FlyToggle:SetValue(newState)
-        SetFloatingButtonActive(FlightButton, newState, "Flight")
+        FloatingButtonModule.SetActive(Btn, newState, "Flight")
     end
 end)
 
@@ -2225,9 +2429,9 @@ GodModeToggle = secPlayerAuto2:AddToggle("GodModeToggle", {
     Title = "God Mode",
     Description = "Become invincible",
     Default = false,
-    Callback = function(state)
-        godModeEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        godModeEnabled = DConfiguration
+        if DConfiguration then
             applyGodMode()
             startGodMode()
         else
@@ -2298,9 +2502,9 @@ end
 TPWALKToggle = secPlayerAuto2:AddToggle("TPWALKToggle", {
     Title = "TP WALK",
     Default = TPWALK,
-    Callback = function(state)
-        TPWALK = state
-        if state then
+    Callback = function(DConfiguration)
+        TPWALK = DConfiguration
+        if DConfiguration then
             startTpwalk()
         else
             stopTpwalk()
@@ -2361,9 +2565,9 @@ end
 JumpBoostToggle = secPlayerAuto2:AddToggle("JumpBoostToggle", {
     Title = "Jump Height",
     Default = JumpBoost,
-    Callback = function(state)
-        JumpBoost = state
-        if state then
+    Callback = function(DConfiguration)
+        JumpBoost = DConfiguration
+        if DConfiguration then
             startJumpBoost()
         else
             stopJumpBoost()
@@ -2436,25 +2640,24 @@ FakeDeadToggle = secPlayerAuto2:AddToggle("PlayerToggle22", {
     Callback = function(v)
         FakeDeadEnabled = v
         ApplyFakeDead(v)
-        SetFloatingButtonActive(FakeDeadFloatButton, v, "Fake Dead")
+        FloatingButtonModule.SetActive(FakeDeadFloatButton, v, "Fake Dead")
     end
 })
 
 secPlayerAuto2:AddToggle("FakeDeadBtnVisibleToggle", {
     Title = "Show Fake Dead Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(FakeDeadFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(FakeDeadFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secPlayerAuto2, "FakeDeadBtn", "Fake Dead")
+FBModule:AddSizeInputs(secPlayerAuto2, "FakeDeadBtn", "Fake Dead")
 
-FakeDeadFrame, FakeDeadFloatButton = CreateFloatingButton("FakeDeadBtn", "Fake Dead", true)
-FakeDeadFloatButton.Activated:Connect(function()
+FakeDeadFrame, FakeDeadFloatButton = FBModule:Create("FakeDeadBtn", "Fake Dead", true, function(Btn)
     FakeDeadEnabled = not FakeDeadEnabled
     ApplyFakeDead(FakeDeadEnabled)
-    SetFloatingButtonActive(FakeDeadFloatButton, FakeDeadEnabled, "Fake Dead")
+    FloatingButtonModule.SetActive(Btn, FakeDeadEnabled, "Fake Dead")
     if FakeDeadToggle then
         FakeDeadToggle:SetValue(FakeDeadEnabled)
     end
@@ -2908,9 +3111,9 @@ secCombatAuto1 = Tabs.Combat:AddSection("Aimbot", "solar/widget-2-bold")
 AimbotToggle = secCombatAuto1:AddToggle("AimbotToggle", {
     Title = "Aimbot",
     Default = false,
-    Callback = function(state)
-        AimbotEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        AimbotEnabled = DConfiguration
+        if DConfiguration then
             startAimbot()
         else
             stopAimbot()
@@ -2979,8 +3182,8 @@ MaxDistanceInput = secCombatAuto1:AddInput("CombatInput29", {
 WallCheckToggle = secCombatAuto1:AddToggle("WallCheckToggle", {
     Title = "Wall Check",
     Default = false,
-    Callback = function(state)
-        wallCheckEnabled = state
+    Callback = function(DConfiguration)
+        wallCheckEnabled = DConfiguration
     end
 })
 
@@ -2990,8 +3193,8 @@ secCombatAuto2 = Tabs.Combat:AddSection("FOV Settings", "solar/widget-2-bold")
 ShowFOVToggle = secCombatAuto2:AddToggle("ShowFOVToggle", {
     Title = "Show FOV Circle",
     Default = false,
-    Callback = function(state)
-        ShowFOV = state
+    Callback = function(DConfiguration)
+        ShowFOV = DConfiguration
         updateFOVCircle()
     end
 })
@@ -2999,8 +3202,8 @@ ShowFOVToggle = secCombatAuto2:AddToggle("ShowFOVToggle", {
 LockFOVToggle = secCombatAuto2:AddToggle("LockFOVToggle", {
     Title = "Lock FOV On Middle Screen",
     Default = true,
-    Callback = function(state)
-        lockFOVToCenter = state
+    Callback = function(DConfiguration)
+        lockFOVToCenter = DConfiguration
         updateFOVCircle()
     end
 })
@@ -3202,32 +3405,31 @@ end
 AutoShootToggle = secCombatAuto3:AddToggle("AutoShoot", {
     Title = "Auto Shoot Murderer",
     Default = false,
-    Callback = function(state)
-        autoShootEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        autoShootEnabled = DConfiguration
+        if DConfiguration then
             task.spawn(startAutoShoot)
         end
-        SetFloatingButtonActive(AutoShootFloatButton, state, "Auto Shoot Murder")
+        FloatingButtonModule.SetActive(AutoShootFloatButton, DConfiguration, "Auto Shoot Murder")
     end
 })
 
 secCombatAuto3:AddToggle("AutoShootBtnVisibleToggle", {
     Title = "Show Auto Shoot Murder Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(AutoShootFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(AutoShootFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secCombatAuto3, "AutoShootBtn", "Auto Shoot Murder")
+FBModule:AddSizeInputs(secCombatAuto3, "AutoShootBtn", "Auto Shoot Murder")
 
-AutoShootFrame, AutoShootFloatButton = CreateFloatingButton("AutoShootBtn", "Auto Shoot Murder", true)
-AutoShootFloatButton.Activated:Connect(function()
+AutoShootFrame, AutoShootFloatButton = FBModule:Create("AutoShootBtn", "Auto Shoot Murder", true, function(Btn)
     autoShootEnabled = not autoShootEnabled
     if autoShootEnabled then
         task.spawn(startAutoShoot)
     end
-    SetFloatingButtonActive(AutoShootFloatButton, autoShootEnabled, "Auto Shoot Murder")
+    FloatingButtonModule.SetActive(Btn, autoShootEnabled, "Auto Shoot Murder")
     if AutoShootToggle then
         AutoShootToggle:SetValue(autoShootEnabled)
     end
@@ -3237,10 +3439,10 @@ secCombatAuto3:AddToggle("MagicBullet", {
     Title = "Magic Bullet",
     Description = "Allow Shoot through walls (70% work)",
     Default = false,
-    Callback = function(state)
-        MagicBulletEnabled = state
-        if state then
-            SetFloatingButtonText(SheriffButton, "MAGIC BULLET SHOOT")
+    Callback = function(DConfiguration)
+        MagicBulletEnabled = DConfiguration
+        if DConfiguration then
+            FloatingButtonModule.SetText(SheriffButton, "MAGIC BULLET SHOOT")
             if manualShootMurd then
                 manualShootMurd:SetTitle("MAGIC BULLET BUTTON")
             end
@@ -3248,7 +3450,7 @@ secCombatAuto3:AddToggle("MagicBullet", {
                 ShootKeybind:SetTitle("MAGIC BULLET KEY")
             end
         else
-            SetFloatingButtonText(SheriffButton, "Shoot Murderer")
+            FloatingButtonModule.SetText(SheriffButton, "Shoot Murderer")
             if manualShootMurd then
                 manualShootMurd:SetTitle("Shoot Murderer")
             end
@@ -3263,8 +3465,8 @@ secCombatAuto3:AddToggle("ShootWallCheck", {
     Title = "Wall Check (Prevent shooting through walls)",
     Type = "Checkbox",
     Default = false,
-    Callback = function(state)
-        wallCheckEnabled = state
+    Callback = function(DConfiguration)
+        wallCheckEnabled = DConfiguration
     end
 })
 
@@ -3273,8 +3475,8 @@ secCombatAuto3:AddToggle("PredictionToggle", {
     Title = "Enable Prediction",
     Description = "Predict target movement for better accuracy",
     Default = true,
-    Callback = function(state)
-        predictionEnabled = state
+    Callback = function(DConfiguration)
+        predictionEnabled = DConfiguration
     end
 })
 
@@ -3327,16 +3529,15 @@ ShootKeybind = secCombatAuto3:AddKeybind("CombatKeybind46", {
 secCombatAuto3:AddToggle("SheriffBtnVisibleToggle", {
     Title = "Show Shoot Murder Button",
     Default = false,
-    Callback = function(state)
-        SheriffBtnVisible = state
-        SetFloatingButtonVisible(SheriffFrame, state)
+    Callback = function(DConfiguration)
+        SheriffBtnVisible = DConfiguration
+        FloatingButtonModule.SetVisible(SheriffFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secCombatAuto3, "SheriffBtn", "Shoot Murder")
+FBModule:AddSizeInputs(secCombatAuto3, "SheriffBtn", "Shoot Murder")
 
-SheriffFrame, SheriffButton = CreateFloatingButton("SheriffBtn", "Shoot Murder", false)
-SheriffButton.Activated:Connect(function() ShootMurderer() end)
+SheriffFrame, SheriffButton = FBModule:Create("SheriffBtn", "Shoot Murder", false, function() ShootMurderer() end)
 GunSystem = {
     AutoGrabEnabled = false,
     NotifyGun = false,
@@ -3659,9 +3860,9 @@ secCombatAuto3:AddToggle("TPStealGun", {
     Title = "Auto Grab Gun",
     Description = "Auto Steal Gun by teleport",
     Default = false,
-    Callback = function(state)
-        GunSystem.AutoGrabEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        GunSystem.AutoGrabEnabled = DConfiguration
+        if DConfiguration then
             coroutine.wrap(AutoGrabGun)()
         end
     end
@@ -3689,9 +3890,9 @@ secCombatAuto3:AddToggle("TouchInstantFireGun", {
     Title = "Gun Aura",
     Description = "Auto Steal Gun without teleport",
     Default = false,
-    Callback = function(state)
-        GunAuraEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        GunAuraEnabled = DConfiguration
+        if DConfiguration then
             GunAuraConnection = RunService.Heartbeat:Connect(function()
                 if GunAuraEnabled then
                     BringGun()
@@ -3727,8 +3928,8 @@ secCombatAuto3:AddDropdown("CombatDropdown51", {
 secCombatAuto3:AddToggle("NotifyGunDrop", {
     Title = "Notify Gun",
     Default = false,
-    Callback = function(state)
-        GunSystem.NotifyGun = state
+    Callback = function(DConfiguration)
+        GunSystem.NotifyGun = DConfiguration
     end
 })
 
@@ -4390,9 +4591,9 @@ secCombatAuto5:AddToggle("StabReachToggle", {
     Title = "Stab Reach",
     Description = "Only work when you spam clicking",
     Default = false,
-    Callback = function(state)
-        KnifeCombat.StabReach.Enabled = state
-        if state then
+    Callback = function(DConfiguration)
+        KnifeCombat.StabReach.Enabled = DConfiguration
+        if DConfiguration then
             KnifeCombat.startStabReach()
         else
             KnifeCombat.stopStabReach()
@@ -4419,29 +4620,28 @@ AutoThrowToggle = secCombatAuto6:AddToggle("AutoThrown", {
     Title = "Auto Throw Knife",
     Description = "Automatically throw knife at nearby players",
     Default = false,
-    Callback = function(state)
-        KnifeCombat.autoThrowKnife = state
-        if state then
+    Callback = function(DConfiguration)
+        KnifeCombat.autoThrowKnife = DConfiguration
+        if DConfiguration then
             KnifeCombat.startAutoThrow()
         else
             KnifeCombat.stopAutoThrow()
         end
-        SetFloatingButtonActive(AutoThrowKnifeButton, KnifeCombat.autoThrowKnife, "Auto Throw Knife")
+        FloatingButtonModule.SetActive(AutoThrowKnifeButton, KnifeCombat.autoThrowKnife, "Auto Throw Knife")
     end
 })
 
 secCombatAuto6:AddToggle("AutoThrowKnifeBtnVisibleToggle", {
     Title = "Show Auto Throw Knife Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(AutoThrowKnifeFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(AutoThrowKnifeFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secCombatAuto6, "AutoThrowKnifeBtn", "Auto Throw Knife")
+FBModule:AddSizeInputs(secCombatAuto6, "AutoThrowKnifeBtn", "Auto Throw Knife")
 
-AutoThrowKnifeFrame, AutoThrowKnifeButton = CreateFloatingButton("AutoThrowKnifeBtn", "Auto Throw Knife", true)
-AutoThrowKnifeButton.Activated:Connect(function()
+AutoThrowKnifeFrame, AutoThrowKnifeButton = FBModule:Create("AutoThrowKnifeBtn", "Auto Throw Knife", true, function(Btn)
     local newState = not KnifeCombat.autoThrowKnife
     KnifeCombat.autoThrowKnife = newState
     if newState then
@@ -4449,7 +4649,7 @@ AutoThrowKnifeButton.Activated:Connect(function()
     else
         KnifeCombat.stopAutoThrow()
     end
-    SetFloatingButtonActive(AutoThrowKnifeButton, newState, "Auto Throw Knife")
+    FloatingButtonModule.SetActive(Btn, newState, "Auto Throw Knife")
     if AutoThrowToggle then
         AutoThrowToggle:SetValue(newState)
     end
@@ -4469,16 +4669,15 @@ secCombatAuto6:AddButton({
 secCombatAuto6:AddToggle("ThrowKnifeBtnVisibleToggle", {
     Title = "Show Throw Knife Button",
     Default = false,
-    Callback = function(state)
-        ThrowKnifeBtnVisible = state
-        SetFloatingButtonVisible(ThrowKnifeFrame, state)
+    Callback = function(DConfiguration)
+        ThrowKnifeBtnVisible = DConfiguration
+        FloatingButtonModule.SetVisible(ThrowKnifeFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secCombatAuto6, "ThrowKnifeBtn", "THROW KNIFE")
+FBModule:AddSizeInputs(secCombatAuto6, "ThrowKnifeBtn", "THROW KNIFE")
 
-ThrowKnifeFrame, ThrowKnifeButton = CreateFloatingButton("ThrowKnifeBtn", "THROW KNIFE", false)
-ThrowKnifeButton.Activated:Connect(function()
+ThrowKnifeFrame, ThrowKnifeButton = FBModule:Create("ThrowKnifeBtn", "THROW KNIFE", false, function()
     if KnifeCombat.GetMurderer() == LocalPlayer then
         KnifeCombat.throwKnife()
     end
@@ -4530,8 +4729,8 @@ secCombatAuto7:AddToggle("ThrownHitboxScalerToggle", {
     Title = "Enable Thrown Hitbox",
     Description = "Expands thrown knife hit detection",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             KnifeCombat.EnableKnifeHitbox()
         else
             KnifeCombat.DisableKnifeHitbox()
@@ -4556,8 +4755,8 @@ secCombatAuto7:AddToggle("TSHMT", {
     Description = "Hit multiple players with one thrown knife",
     Default = false,
     Type = "Checkbox",
-    Callback = function(state)
-        KnifeCombat.HitboxConfig.MultipleTargets = state
+    Callback = function(DConfiguration)
+        KnifeCombat.HitboxConfig.MultipleTargets = DConfiguration
     end
 })
 
@@ -4568,9 +4767,9 @@ secCombatAuto8:AddToggle("AutoKillToggle", {
     Title = "Auto Kill",
     Flag = "KnifeAutoKillToggle",
     Default = false,
-    Callback = function(state)
-        KnifeCombat.autoKillEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        KnifeCombat.autoKillEnabled = DConfiguration
+        if DConfiguration then
             KnifeCombat.startAutoKill()
         else
             KnifeCombat.stopAutoKill()
@@ -4581,9 +4780,9 @@ secCombatAuto8:AddToggle("AutoKillToggle", {
 secCombatAuto8:AddToggle("AutoEquipKnife", {
     Title = "Auto Equip Knife",
     Default = false,
-    Callback = function(state)
-        KnifeCombat.autoEquipKnife = state
-        if state then
+    Callback = function(DConfiguration)
+        KnifeCombat.autoEquipKnife = DConfiguration
+        if DConfiguration then
             KnifeCombat.equipConnection = RunService.Heartbeat:Connect(KnifeCombat.checkNearbyPlayer)
         else
             if KnifeCombat.equipConnection then
@@ -4623,8 +4822,8 @@ secCombatAuto8:AddSpace({ Height = 20 })
 secCombatAuto8:AddToggle("ShowAuraToggle", {
     Title = "Show Aura Circle",
     Default = false,
-    Callback = function(state)
-        KnifeCombat.showAuraCircle = state
+    Callback = function(DConfiguration)
+        KnifeCombat.showAuraCircle = DConfiguration
         KnifeCombat.createAuraCircle()
     end
 })
@@ -4651,8 +4850,8 @@ function setupCameraStretch()
     CameraStretchToggle = secVisualsAuto1:AddToggle("CameraStretchToggle", {
         Title = "Camera Stretch",
         Default = false,
-        Callback = function(state)
-            if state then
+        Callback = function(DConfiguration)
+            if DConfiguration then
                 if cameraStretchConnection then cameraStretchConnection:Disconnect() end
                 cameraStretchConnection = RunService.RenderStepped:Connect(function()
                     local Camera = workspace.CurrentCamera
@@ -4714,9 +4913,9 @@ FullBrightToggle = secVisualsAuto1:AddToggle("FullBrightToggle", {
     Title = "Full Bright",
     Description = "Ya Like drinking Night Vision while mining in da cave and sceard of creeper blow you up dawg?",
     Default = false,
-    Callback = function(state)
-        FullBright = state
-        if state then
+    Callback = function(DConfiguration)
+        FullBright = DConfiguration
+        if DConfiguration then
             local Lighting = game:GetService("Lighting")
 
             originalBrightness = Lighting.Brightness
@@ -4846,13 +5045,14 @@ function createRoundTimerGui()
     frame:SetAttribute("Locked", true)
 
     local gradient = Instance.new("UIGradient")
-    gradient.Color = getgenv().ButtonGradients.Background
+    gradient.Color = (Fluent:GetButtonGradient() or Fluent.ButtonGradients).Background
     gradient.Parent = frame
     task.spawn(function()
         while task.wait(0.03) do
             if not frame.Parent then break end
+            local Grad = Fluent:GetButtonGradient() or Fluent.ButtonGradients
             gradient.Rotation = (gradient.Rotation + 1) % 360
-            gradient.Color = getgenv().ButtonGradients.Background
+            gradient.Color = Grad.Background
         end
     end)
 
@@ -4866,13 +5066,14 @@ function createRoundTimerGui()
     stroke.Color = Color3.new(1, 1, 1)
     stroke.Parent = frame
     local gradientstroke = Instance.new("UIGradient")
-    gradientstroke.Color = getgenv().ButtonGradients.Stroke
+    gradientstroke.Color = (Fluent:GetButtonGradient() or Fluent.ButtonGradients).Stroke
     gradientstroke.Rotation = 0
     gradientstroke.Parent = stroke
     task.spawn(function()
         while frame.Parent do
+            local Grad = Fluent:GetButtonGradient() or Fluent.ButtonGradients
             gradientstroke.Rotation = (gradientstroke.Rotation + 0.5) % 360
-            gradientstroke.Color = getgenv().ButtonGradients.Stroke
+            gradientstroke.Color = Grad.Stroke
             task.wait()
         end
     end)
@@ -5179,9 +5380,9 @@ RoundTimerToggle = secVisualsAuto1:AddToggle("RoundTimerToggle", {
     Title = "Round Timer Display",
     Description = "Show round timer in top middle of screen",
     Default = false,
-    Callback = function(state)
-        roundTimerEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        roundTimerEnabled = DConfiguration
+        if DConfiguration then
             startRoundTimer()
         else
             stopRoundTimer()
@@ -5197,11 +5398,11 @@ end)
 
 xRay = false
 
-function ApplyXray(state)
-    xRay = state
+function ApplyXray(DConfiguration)
+    xRay = DConfiguration
     for _, part in pairs(workspace:GetDescendants()) do
         if part:IsA("BasePart") and not part:IsDescendantOf(LocalPlayer.Character) then
-            part.LocalTransparencyModifier = state and 0.7 or 0
+            part.LocalTransparencyModifier = DConfiguration and 0.7 or 0
         end
     end
 end
@@ -5209,27 +5410,26 @@ end
 XrayToggle = secVisualsAuto1:AddToggle("Xray", {
     Title = "X-ray Vision",
     Compact = true,
-    Callback = function(state)
-        ApplyXray(state)
-        SetFloatingButtonActive(XrayFloatButton, state, "X-ray Vision")
+    Callback = function(DConfiguration)
+        ApplyXray(DConfiguration)
+        FloatingButtonModule.SetActive(XrayFloatButton, DConfiguration, "X-ray Vision")
     end
 })
 
 secVisualsAuto1:AddToggle("XrayBtnVisibleToggle", {
     Title = "Show X-ray Vision Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(XrayFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(XrayFrame, DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secVisualsAuto1, "XrayBtn", "X-ray Vision")
+FBModule:AddSizeInputs(secVisualsAuto1, "XrayBtn", "X-ray Vision")
 
-XrayFrame, XrayFloatButton = CreateFloatingButton("XrayBtn", "X-ray Vision", true)
-XrayFloatButton.Activated:Connect(function()
+XrayFrame, XrayFloatButton = FBModule:Create("XrayBtn", "X-ray Vision", true, function(Btn)
     local newState = not xRay
     ApplyXray(newState)
-    SetFloatingButtonActive(XrayFloatButton, newState, "X-ray Vision")
+    FloatingButtonModule.SetActive(Btn, newState, "X-ray Vision")
     if XrayToggle then
         XrayToggle:SetValue(newState)
     end
@@ -5270,8 +5470,8 @@ secVisualsAuto1:AddButton({
 
 secVisualsAuto1:AddToggle("Anti CoinLag", {
     Title = "Disable CoinVisualizer",
-    Callback = function(state)
-        LocalPlayer.PlayerScripts.CoinVisualizer.Disabled = state
+    Callback = function(DConfiguration)
+        LocalPlayer.PlayerScripts.CoinVisualizer.Disabled = DConfiguration
     end
 })
 
@@ -5437,9 +5637,9 @@ forceSpectateToggleObject = secVisualsAuto1:AddToggle("ForceSpectateToggle", {
     Title = "Force Spectate",
     Description = "Force Spectate While In Round Started",
     Default = false,
-    Callback = function(state)
-        forceSpectate = state
-        if state then
+    Callback = function(DConfiguration)
+        forceSpectate = DConfiguration
+        if DConfiguration then
             startForceSpectate()
             forceSpectateConnection = LocalPlayer.CharacterAdded:Connect(function()
                 task.wait(1)
@@ -5462,8 +5662,8 @@ customSpectateToggleObject = secVisualsAuto1:AddToggle("CustomSpectateToggle", {
     Title = "Custom Spectate Selected Player",
     Description = "Spectate any player without game logic",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             if selectedPlayerForSpectate and selectedPlayerForSpectate ~= "None" then
                 local targetPlayer = Players:FindFirstChild(selectedPlayerForSpectate)
                 if targetPlayer and targetPlayer.Character then
@@ -5774,8 +5974,107 @@ secVisualsAuto5:AddButton({
 })
 
 BuiltInSkyboxes = {
+    ["Waguri"] = {
+        Folder = "GoonWares/Skyboxes/Waguri",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_ft.png", File = "waguri_ft.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_bk.png", File = "waguri_bk.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_rt.png", File = "waguri_rt.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_lf.png", File = "waguri_lf.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_up.png", File = "waguri_up.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Waguri/waguri_dn.png", File = "waguri_dn.png" },
+        },
+    },
+    ["ItsukiNakano"] = {
+        Folder = "GoonWares/Skyboxes/ItsukiNakano",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Bk.png", File = "ItsukiNakano_Bk.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Ft.png", File = "ItsukiNakano_Ft.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Lf.png", File = "ItsukiNakano_Lf.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Rt.png", File = "ItsukiNakano_Rt.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Up.png", File = "ItsukiNakano_Up.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano/ItsukiNakano_Dn.png", File = "ItsukiNakano_Dn.png" },
+        },
+    },
+    ["ItsukiNakano2"] = {
+        Folder = "GoonWares/Skyboxes/ItsukiNakano2",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Bk.png", File = "ItsukiNakano2_Bk.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Ft.png", File = "ItsukiNakano2_Ft.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Lf.png", File = "ItsukiNakano2_Lf.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Rt.png", File = "ItsukiNakano2_Rt.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Up.png", File = "ItsukiNakano2_Up.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/ItsukiNakano2/ItsukiNakano2_Dn.png", File = "ItsukiNakano2_Dn.png" },
+        },
+    },
+    ["MaiSakurajima"] = {
+        Folder = "GoonWares/Skyboxes/MaiSakurajima",
+        Faces = {
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/top.png", File = "top.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/down.png", File = "down.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/left.png", File = "left.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/right.png", File = "right.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/front.png", File = "front.png" },
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MaiSakurajima/back.png", File = "back.png" },
+        },
+    },
+    ["MikuNakano"] = {
+        Folder = "GoonWares/Skyboxes/MikuNakano",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Bk.png", File = "MikuNakano_Bk.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Ft.png", File = "MikuNakano_Ft.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Lf.png", File = "MikuNakano_Lf.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Rt.png", File = "MikuNakano_Rt.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Up.png", File = "MikuNakano_Up.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/MikuNakano/MikuNakano_Dn.png", File = "MikuNakano_Dn.png" },
+        },
+    },
+    ["TohkaYatogami"] = {
+        Folder = "GoonWares/Skyboxes/TohkaYatogami",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_BK.png", File = "TohkaYatogami_BK.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_FT.png", File = "TohkaYatogami_FT.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_LF.png", File = "TohkaYatogami_LF.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_RT.png", File = "TohkaYatogami_RT.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_UP.png", File = "TohkaYatogami_UP.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami_DN.png", File = "TohkaYatogami_DN.png" },
+        },
+    },
+    ["TohkaYatogami2"] = {
+        Folder = "GoonWares/Skyboxes/TohkaYatogami",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_BK.png", File = "TohkaYatogami2_BK.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_FT.png", File = "TohkaYatogami2_FT.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_LF.png", File = "TohkaYatogami2_LF.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_RT.png", File = "TohkaYatogami2_RT.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_UP.png", File = "TohkaYatogami2_UP.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/TohkaYatogami/TohkaYatogami2_DN.png", File = "TohkaYatogami2_DN.png" },
+        },
+    },
+    ["LilithAsami"] = {
+        Folder = "GoonWares/Skyboxes/LilithAsami",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_BK.png", File = "LilithAsami_BK.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_FT.png", File = "LilithAsami_FT.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_LF.png", File = "LilithAsami_LF.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_RT.png", File = "LilithAsami_RT.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_UP.png", File = "LilithAsami_UP.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/LilithAsami/LilithAsami_DN.png", File = "LilithAsami_DN.png" },
+        },
+    },
+    ["Evernight"] = {
+        Folder = "GoonWares/Skyboxes/Evernight",
+        Faces = {
+            { Prop = "SkyboxBk", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_RT.png", File = "SkyRt.png" },
+            { Prop = "SkyboxRt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_LF.png", File = "SkyIf.png" },
+            { Prop = "SkyboxLf", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_BK.png", File = "SkyBk.png" },
+            { Prop = "SkyboxFt", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_FT.png", File = "SkyFt.png" },
+            { Prop = "SkyboxUp", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_UP.png", File = "SkyUp.png" },
+            { Prop = "SkyboxDn", Url = "https://raw.githubusercontent.com/StyearX/Custom-skybox/main/Evernight/evernight_DN.png", File = "SkyDn.png" },
+        },
+    },
     ["Xenovia Quarta"] = {
-        Folder = "GoonWares Skyboxes/Xenovia Quarta",
+        Folder = "GoonWares/Skyboxes/Xenovia Quarta",
         Faces = {
             { Prop = "SkyboxLf", Url = "https://od.lk/d/NjNfOTg0NjM0ODhf/if.png", File = "if.png" },
             { Prop = "SkyboxBk", Url = "https://od.lk/d/NjNfOTg0NjM0ODlf/ft.png", File = "ft.png" },
@@ -5786,7 +6085,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Nino Nakano"] = {
-        Folder = "GoonWares Skyboxes/Nino Nakano",
+        Folder = "GoonWares/Skyboxes/Nino Nakano",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NjQyODNf/right1.png", File = "right1.png" },
@@ -5798,7 +6097,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Nino Nakano 2"] = {
-        Folder = "GoonWares Skyboxes/Nino Nakano 2",
+        Folder = "GoonWares/Skyboxes/Nino Nakano 2",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NjQyNTJf/rt.png", File = "rt.png" },
@@ -5810,7 +6109,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Saki Saki"] = {
-        Folder = "GoonWares Skyboxes/Saki Saki",
+        Folder = "GoonWares/Skyboxes/Saki Saki",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NjQyNzNf/right.png", File = "right.png" },
@@ -5822,7 +6121,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Rias Gremory"] = {
-        Folder = "GoonWares Skyboxes/Rias Gremory",
+        Folder = "GoonWares/Skyboxes/Rias Gremory",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NzkyOTFf/RightRias.png", File = "RightRias.png" },
@@ -5834,7 +6133,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Yotsuba Nakano"] = {
-        Folder = "GoonWares Skyboxes/Yotsuba Nakano",
+        Folder = "GoonWares/Skyboxes/Yotsuba Nakano",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NzkzMzdf/YotsubaRt.png", File = "YotsubaRt.png" },
@@ -5846,7 +6145,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Hakari Hananozo"] = {
-        Folder = "GoonWares Skyboxes/hk",
+        Folder = "GoonWares/Skyboxes/hk",
         Faces = {
             { Prop = "SkyboxBk", Url = "https://od.lk/d/NjNfOTg0NjEzMTVf/SkyBk.tex", File = "SkyBk.png" },
             { Prop = "SkyboxFt", Url = "https://od.lk/s/NjNfOTg0NjEzMTdf/SkyFt.tex", File = "SkyFt.png" },
@@ -5857,7 +6156,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Alya"] = {
-        Folder = "GoonWares Skyboxes/Alya",
+        Folder = "GoonWares/Skyboxes/Alya",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NzkzMTZf/Rt.png", File = "Rt.png" },
@@ -5869,7 +6168,7 @@ BuiltInSkyboxes = {
         },
     },
     ["Alya 2"] = {
-        Folder = "GoonWares Skyboxes/Alya 2",
+        Folder = "GoonWares/Skyboxes/Alya 2",
         ResetHaze = true,
         Faces = {
             { Prop = "SkyboxRt", Url = "https://od.lk/d/NjNfOTg0NzkzMjRf/AlyaRt.png", File = "AlyaRt.png" },
@@ -6813,9 +7112,9 @@ function createRoleSections()
         CollapsedSection:AddToggle(roleName .. "Boxes", {
             Title = roleName .. " Boxes",
             Default = false,
-            Callback = function(state)
+            Callback = function(DConfiguration)
                 if roleSettings[roleName] then
-                    roleSettings[roleName].boxesEnabled = state
+                    roleSettings[roleName].boxesEnabled = DConfiguration
                 end
                 checkAndUpdateRenderLoop()
             end
@@ -6836,9 +7135,9 @@ function createRoleSections()
         CollapsedSection:AddToggle(roleName .. "Names", {
             Title = roleName .. " Names",
             Default = false,
-            Callback = function(state)
+            Callback = function(DConfiguration)
                 if roleSettings[roleName] then
-                    roleSettings[roleName].namesEnabled = state
+                    roleSettings[roleName].namesEnabled = DConfiguration
                 end
                 checkAndUpdateRenderLoop()
             end
@@ -6847,9 +7146,9 @@ function createRoleSections()
         CollapsedSection:AddToggle(roleName .. "Distance", {
             Title = roleName .. " Distance",
             Default = false,
-            Callback = function(state)
+            Callback = function(DConfiguration)
                 if roleSettings[roleName] then
-                    roleSettings[roleName].distanceEnabled = state
+                    roleSettings[roleName].distanceEnabled = DConfiguration
                 end
                 checkAndUpdateRenderLoop()
             end
@@ -6859,9 +7158,9 @@ function createRoleSections()
         CollapsedSection:AddToggle(roleName .. "Highlights", {
             Title = roleName .. " Highlights",
             Default = false,
-            Callback = function(state)
+            Callback = function(DConfiguration)
                 if roleSettings[roleName] then
-                    roleSettings[roleName].highlightsEnabled = state
+                    roleSettings[roleName].highlightsEnabled = DConfiguration
                 end
                 checkAndUpdateRenderLoop()
             end
@@ -6977,8 +7276,8 @@ GunESPSection = Tabs.ESP:AddSection("Gun ESP", "solar/widget-2-bold")
 GunESPSection:AddToggle("GunBoxes", {
     Title = "Gun Boxes",
     Default = false,
-    Callback = function(state) 
-        gunBoxesEnabled = state
+    Callback = function(DConfiguration) 
+        gunBoxesEnabled = DConfiguration
         checkAndUpdateRenderLoop()
     end
 })
@@ -6994,8 +7293,8 @@ GunESPSection:AddDropdown("GunBoxType", {
 GunESPSection:AddToggle("GunNames", {
     Title = "Gun Names",
     Default = false,
-    Callback = function(state) 
-        gunNamesEnabled = state
+    Callback = function(DConfiguration) 
+        gunNamesEnabled = DConfiguration
         checkAndUpdateRenderLoop()
     end
 })
@@ -7003,8 +7302,8 @@ GunESPSection:AddToggle("GunNames", {
 GunESPSection:AddToggle("GunDistance", {
     Title = "Gun Distance",
     Default = false,
-    Callback = function(state) 
-        gunDistanceEnabled = state
+    Callback = function(DConfiguration) 
+        gunDistanceEnabled = DConfiguration
         checkAndUpdateRenderLoop()
     end
 })
@@ -7013,8 +7312,8 @@ GunESPSection:AddSpace({ Height = 20 })
 GunESPSection:AddToggle("GunHighlights", {
     Title = "Gun Highlights",
     Default = false,
-    Callback = function(state) 
-        gunHighlightsEnabled = state
+    Callback = function(DConfiguration) 
+        gunHighlightsEnabled = DConfiguration
         checkAndUpdateRenderLoop()
     end
 })
@@ -7355,7 +7654,7 @@ LocalPlayer.CharacterAdded:Connect(function(newCharacter)
 end)
 
 
-secMiscAuto1 = Tabs.Misc:AddSection("Misc", "solar/widget-2-bold")
+secMiscAuto1 = Tabs.Main:AddSection("Misc", "solar/widget-2-bold")
 secMiscAuto1:AddDivider()
 
 AntiAFKConnection = nil
@@ -7378,8 +7677,8 @@ end
 AntiAFKToggle = secMiscAuto1:AddToggle("AntiAFKToggle", {
     Title = "Anti AFK",
     Default = AntiAFK,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             startAntiAFK()
         else
             stopAntiAFK()
@@ -7388,7 +7687,7 @@ AntiAFKToggle = secMiscAuto1:AddToggle("AntiAFKToggle", {
 })
 
 Tabs.Misc:AddSpace({ Height = 20 })
-secMiscAuto2 = Tabs.Misc:AddSection("Auto Glitch Vote Map", "solar/widget-2-bold")
+secMiscAuto2 = Tabs.Main:AddSection("Auto Glitch Vote Map", "solar/widget-2-bold")
 secMiscAuto2:AddDivider()
 
 AutoVote = {
@@ -7500,9 +7799,9 @@ end
 secMiscAuto2:AddToggle("VoteGlitch", {
     Title = "Auto Vote Teleport",
     Default = AutoVote.Enabled,
-    Callback = function(state)
-        AutoVote.Enabled = state
-        if state then
+    Callback = function(DConfiguration)
+        AutoVote.Enabled = DConfiguration
+        if DConfiguration then
             if AutoVote.Connection then
                 task.cancel(AutoVote.Connection)
             end
@@ -7645,9 +7944,9 @@ function TeleportToSafeSpot()
     end
 end
 
-function toggleLay(state)
-    isLaying = state
-    if state and not IsPlayerDead() then
+function toggleLay(DConfiguration)
+    isLaying = DConfiguration
+    if DConfiguration and not IsPlayerDead() then
         originalPlatformStand = Humanoid.PlatformStand
         Humanoid.Sit = true
         Humanoid.PlatformStand = true
@@ -8028,15 +8327,15 @@ function StopCoinAura()
 end
 
 Tabs.Misc:AddSpace({ Height = 20 })
-secMiscAuto3 = Tabs.Misc:AddSection("Auto Farm", "solar/widget-2-bold")
+secMiscAuto3 = Tabs.Main:AddSection("Auto Farm", "solar/widget-2-bold")
 secMiscAuto3:AddDivider()
 
 autoFarmToggle = secMiscAuto3:AddToggle("AutoFarm", {
     Title = "Enable Auto Farm",
     Default = false,
-    Callback = function(state)
-        AutoFarm.Enabled = state
-        if state then
+    Callback = function(DConfiguration)
+        AutoFarm.Enabled = DConfiguration
+        if DConfiguration then
             AntiAFKToggle:SetValue(true)
             startAutoFarmLoop()
         else
@@ -8087,11 +8386,11 @@ undergroundFarmToggle = secMiscAuto3:AddToggle("undergroundFarmToggle", {
     Description = "Farm coins underground and lay down",
     Default = false,
     Type = "Checkbox",
-    Callback = function(state)
-        AutoFarm.UndergroundFarm = state
-        if state and AutoFarm.Enabled and AutoFarm.AutoFarmType == "Tween" then
+    Callback = function(DConfiguration)
+        AutoFarm.UndergroundFarm = DConfiguration
+        if DConfiguration and AutoFarm.Enabled and AutoFarm.AutoFarmType == "Tween" then
             toggleLay(true)
-        elseif not state and isLaying then
+        elseif not DConfiguration and isLaying then
             toggleLay(false)
         end
     end
@@ -8126,8 +8425,8 @@ teleportDelayInput = secMiscAuto3:AddInput("teleportDelayInput", {
 CoinAura = secMiscAuto3:AddToggle("CoinAura", {
     Title = "Coin Aura",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             StartCoinAura() 
         else
             StopCoinAura() 
@@ -8139,8 +8438,8 @@ secMiscAuto3:AddSpace({ Height = 20 })
 ExpFarmToggle = secMiscAuto3:AddToggle("ExpFarmToggle", {
     Title = "Exp Farm",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             startExpFarm()
         else
             stopExpFarm()
@@ -8153,7 +8452,7 @@ function getPlayerRole(playerName)
 end
 
 Tabs.Misc:AddSpace({ Height = 20 })
-secMiscAuto4 = Tabs.Misc:AddSection("Role Revealer", "solar/widget-2-bold")
+secMiscAuto4 = Tabs.Main:AddSection("Role Revealer", "solar/widget-2-bold")
 secMiscAuto4:AddDivider()
 
 secMiscAuto4:AddButton({
@@ -8294,34 +8593,33 @@ function startCooldown()
     end)
 end
 
-BombFrame, BombTextButton = CreateFloatingButton("BombMLG", "Bomb MLG", false)
-bombButton = {
-    SetText = function(_, text) SetFloatingButtonText(BombTextButton, text) end,
-    SetVisible = function(_, state) SetFloatingButtonVisible(BombFrame, state) end,
-}
-BombTextButton.Activated:Connect(function()
+BombFrame, BombTextButton = FBModule:Create("BombMLG", "Bomb MLG", false, function(Btn)
     if isBombCooldown then return end
     if not hasFakeBomb() then
-        bombButton:SetText("You Don't Have Fake Bomb")
+        FloatingButtonModule.SetText(Btn, "You Don't Have Fake Bomb")
         task.wait(3)
-        bombButton:SetText("Bomb MLG")
+        FloatingButtonModule.SetText(Btn, "Bomb MLG")
         return
     end
     DropFakeBomb()
     isBombCooldown = true
     startCooldown()
 end)
+bombButton = {
+    SetText = function(_, text) FloatingButtonModule.SetText(BombTextButton, text) end,
+    SetVisible = function(_, DConfiguration) FloatingButtonModule.SetVisible(BombFrame, DConfiguration) end,
+}
 
 secMiscAuto4:AddSpace({ Height = 20 })
 ShowBombMLGButtonToggle = secMiscAuto4:AddToggle("ShowBombMLGButtonToggle", {
     Title = "Show Bomb MLG Button",
     Default = false,
-    Callback = function(state)
-        bombButton:SetVisible(state)
+    Callback = function(DConfiguration)
+        bombButton:SetVisible(DConfiguration)
     end,
 })
 
-AddFloatingButtonSizeInputs(secMiscAuto4, "BombMLG", "Bomb MLG")
+FBModule:AddSizeInputs(secMiscAuto4, "BombMLG", "Bomb MLG")
 
 FakeBombKeybind = secMiscAuto4:AddKeybind("FakeBombKeybind", {
     Title = "Bomb MLG Keybind",
@@ -8359,9 +8657,9 @@ function IsLikelyInvisibleWall(obj)
     return obj:IsA("BasePart") and obj.Transparency >= 0.95 and obj.CanCollide == true
 end
 
-function ApplyInvisibleWallState(obj, state)
+function ApplyInvisibleWallState(obj, DConfiguration)
     if IsLikelyInvisibleWall(obj) then
-        obj.CanCollide = not state
+        obj.CanCollide = not DConfiguration
     end
 end
 
@@ -8369,11 +8667,11 @@ secUtilityAntiAFK:AddToggle("UtilityToggle138", {
     Title = "Disable Invisible Walls",
     Description = "Disables collision on all invisible walls",
     Default = false,
-    Callback = function(state)
-        disableInvisibleWallsEnabled = state
+    Callback = function(DConfiguration)
+        disableInvisibleWallsEnabled = DConfiguration
 
         for _, obj in pairs(workspace:GetDescendants()) do
-            ApplyInvisibleWallState(obj, state)
+            ApplyInvisibleWallState(obj, DConfiguration)
         end
 
         if invisibleWallConnection then
@@ -8381,7 +8679,7 @@ secUtilityAntiAFK:AddToggle("UtilityToggle138", {
             invisibleWallConnection = nil
         end
 
-        if state then
+        if DConfiguration then
             invisibleWallConnection = workspace.DescendantAdded:Connect(function(obj)
                 task.wait()
                 if disableInvisibleWallsEnabled then
@@ -8473,9 +8771,9 @@ secUtilityFling = Tabs.Utility:AddSection("Fling", "solar/wind-bold")
 TouchFlingToggle = secUtilityFling:AddToggle("TouchFlingToggle", {
     Title = "Touch Fling",
     Default = false,
-    Callback = function(state)
-        hiddenfling = state
-        if state then
+    Callback = function(DConfiguration)
+        hiddenfling = DConfiguration
+        if DConfiguration then
             startFling()
         else
             stopFling()
@@ -9266,8 +9564,8 @@ FlingModeDropdown = secUtilityFlingSettings:AddDropdown("FlingModeDropdown", {
 FlingToggle = secUtilityFlingSettings:AddToggle("FlingToggle", {
     Title = "Fling Players",
     Default = false,
-    Callback = function(state)
-        flingActive = state
+    Callback = function(DConfiguration)
+        flingActive = DConfiguration
 
         if flingActive then
             currentInput = string.lower(flingInputValue or "")
@@ -9389,8 +9687,8 @@ secUtilityAntiVoid = Tabs.Utility:AddSection("Anti Void", "solar/shield-minimali
 secUtilityAntiVoid:AddToggle("AntiVoid", {
     Title = "Anti Void Damage",
     Default = false,
-    Callback = function(state)
-        if state then
+    Callback = function(DConfiguration)
+        if DConfiguration then
             enableAntiVoid()
         else
             disableAntiVoid()
@@ -9439,9 +9737,9 @@ InfinitePositionToggle = secUtilityMisc:AddToggle("InfinitePositionToggle", {
     Title = "Infinite Position Lock",
     Description = "Lock your position in place",
     Default = false,
-    Callback = function(state)
-        infinitePositionEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        infinitePositionEnabled = DConfiguration
+        if DConfiguration then
             lockPosition()
             LocalPlayer.CharacterAdded:Connect(function()
                 if infinitePositionEnabled then
@@ -9525,8 +9823,8 @@ LagSwitchToggle = secUtilityLagSwitch:AddToggle("LagSwitchToggle", {
     Title = "Lag Switch",
     Icon = "zap",
     Default = false,
-    Callback = function(state)
-        lagSwitchEnabled = state
+    Callback = function(DConfiguration)
+        lagSwitchEnabled = DConfiguration
         checkLagState()
     end
 })
@@ -9534,8 +9832,8 @@ LagSwitchToggle = secUtilityLagSwitch:AddToggle("LagSwitchToggle", {
 secUtilityLagSwitch:AddToggle("ShowLagSwitchButton", {
     Title = "Show Lag Switch Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(LagSwitchFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(LagSwitchFrame, DConfiguration)
     end,
 })
 
@@ -9551,10 +9849,9 @@ LagSwitchKeybind = secUtilityLagSwitch:AddKeybind("LagSwitchKeybind", {
     end,
 })
 
-AddFloatingButtonSizeInputs(secUtilityLagSwitch, "LagSwitchBtn", "Lag Switch")
+FBModule:AddSizeInputs(secUtilityLagSwitch, "LagSwitchBtn", "Lag Switch")
 
-LagSwitchFrame, LagSwitchButton = CreateFloatingButton("LagSwitchBtn", "Lag Switch", false)
-LagSwitchButton.Activated:Connect(function()
+LagSwitchFrame, LagSwitchButton = FBModule:Create("LagSwitchBtn", "Lag Switch", false, function()
     isLagActive = task.spawn(lag)
 end)
 
@@ -9603,18 +9900,18 @@ secUtilityGravity = Tabs.Utility:AddSection("Gravity", "solar/planet-bold")
 GravityToggle = secUtilityGravity:AddToggle("GravityToggle", {
     Title = "Custom Gravity",
     Default = false,
-    Callback = function(state)
-        CustomGravity = state
-        workspace.Gravity = state and GravityValue or originalGameGravity
+    Callback = function(DConfiguration)
+        CustomGravity = DConfiguration
+        workspace.Gravity = DConfiguration and GravityValue or originalGameGravity
     end
 })
 
 ShowGravityButtonToggle = secUtilityGravity:AddToggle("ShowGravityButton", {
     Title = "Show Gravity Button",
     Default = false,
-    Callback = function(state)
-        ShowGravityButton = state
-        SetFloatingButtonVisible(GravityFrame, state)
+    Callback = function(DConfiguration)
+        ShowGravityButton = DConfiguration
+        FloatingButtonModule.SetVisible(GravityFrame, DConfiguration)
     end,
 })
 
@@ -9626,19 +9923,18 @@ GravityKeybind = secUtilityGravity:AddKeybind("GravityKeybind", {
         if GravityToggle then
             local newState = not CustomGravity
             GravityToggle:SetValue(newState)
-            SetFloatingButtonActive(GravityFloatButton, newState, "Gravity")
+            FloatingButtonModule.SetActive(GravityFloatButton, newState, "Gravity")
         end
     end,
 })
 
-AddFloatingButtonSizeInputs(secUtilityGravity, "GravityBtn", "Gravity")
+FBModule:AddSizeInputs(secUtilityGravity, "GravityBtn", "Gravity")
 
-GravityFrame, GravityFloatButton = CreateFloatingButton("GravityBtn", "Gravity", true)
-GravityFloatButton.Activated:Connect(function()
+GravityFrame, GravityFloatButton = FBModule:Create("GravityBtn", "Gravity", true, function(Btn)
     if GravityToggle then
         local newState = not CustomGravity
         GravityToggle:SetValue(newState)
-        SetFloatingButtonActive(GravityFloatButton, newState, "Gravity")
+        FloatingButtonModule.SetActive(Btn, newState, "Gravity")
     end
 end)
 
@@ -9674,11 +9970,11 @@ NoRenderToggle = secUtilityNoRender:AddToggle("NoRenderToggle", {
     Title = "No Render",
     Description = "Disable 3D rendering for performance",
     Default = false,
-    Callback = function(state)
-        NoRender = state
+    Callback = function(DConfiguration)
+        NoRender = DConfiguration
         RunService:Set3dRenderingEnabled(not state)
 
-        if state then
+        if DConfiguration then
             local gui = Instance.new("ScreenGui")
             gui.Name = "NoRenderBackground"
             gui.IgnoreGuiInset = true
@@ -9867,9 +10163,9 @@ secUtilityAntiFling = Tabs.Utility:AddSection("Anti Fling", "solar/shield-bold")
 AntiFlingToggle = secUtilityAntiFling:AddToggle("AntiFlingToggle", {
     Title = "Disable Player Collisions",
     Default = false,
-    Callback = function(state)
-        antiFlingEnabled = state
-        if state then
+    Callback = function(DConfiguration)
+        antiFlingEnabled = DConfiguration
+        if DConfiguration then
             startAntiFling()
         else
             stopAntiFling()
@@ -10016,9 +10312,9 @@ secUtilityHitbox = Tabs.Utility:AddSection("Hitbox", "solar/target-bold")
 
 secUtilityHitbox:AddToggle("HRPscaler", {
     Title = "Hitbox Expanding",
-    Callback = function(state)
-        HitboxSettings.Enabled = state
-        if state then
+    Callback = function(DConfiguration)
+        HitboxSettings.Enabled = DConfiguration
+        if DConfiguration then
             ExpandHitboxes()
             if HitboxSettings.ShowVisual then
                 UpdateVisualHitboxes()
@@ -10050,11 +10346,11 @@ secUtilityHitbox:AddSlider("HRPsize", {
 secUtilityHitbox:AddToggle("ShowHRP", {
     Title = "Show Hitbox",
     Type = "Checkbox",
-    Callback = function(state)
-        HitboxSettings.ShowVisual = state
-        if state and HitboxSettings.Enabled then
+    Callback = function(DConfiguration)
+        HitboxSettings.ShowVisual = DConfiguration
+        if DConfiguration and HitboxSettings.Enabled then
             UpdateVisualHitboxes()
-        elseif not state then
+        elseif not DConfiguration then
             ClearVisualAdornments()
         end
     end
@@ -10115,10 +10411,9 @@ function vu16()
 end
 
 function vu30()
-    InvisibleFrame, InvisibleFloatButton = CreateFloatingButton("InvisibleBtn", "INVISIBLE", true)
-    InvisibleFloatButton.Activated:Connect(function()
+    InvisibleFrame, InvisibleFloatButton = FBModule:Create("InvisibleBtn", "INVISIBLE", true, function(Btn)
         vu9 = not vu9
-        SetFloatingButtonActive(InvisibleFloatButton, vu9, "Invisible")
+        FloatingButtonModule.SetActive(Btn, vu9, "Invisible")
         if vu9 then
             local v26, v27, v28 = pairs(vu10)
             while true do
@@ -10143,9 +10438,9 @@ function vu30()
     end)
 
     InvisibleToggleElement = {
-        SetValue = function(_, state)
-            vu9 = state
-            SetFloatingButtonActive(InvisibleFloatButton, vu9, "Invisible")
+        SetValue = function(_, DConfiguration)
+            vu9 = DConfiguration
+            FloatingButtonModule.SetActive(InvisibleFloatButton, vu9, "Invisible")
         end,
     }
 end
@@ -10163,7 +10458,7 @@ v31[1] = vu5:GetMouse().KeyDown:Connect(function(p33)
     if p33 == "i" then
         vu9 = not vu9
 
-        SetFloatingButtonActive(InvisibleFloatButton, vu9, "Invisible")
+        FloatingButtonModule.SetActive(InvisibleFloatButton, vu9, "Invisible")
 
         local v34, v35, v36 = pairs(vu10)
         while true do
@@ -10201,7 +10496,7 @@ end)
 vu5.CharacterAdded:Connect(function()
     vu9 = false
 
-    SetFloatingButtonActive(InvisibleFloatButton, false, "Invisible")
+    FloatingButtonModule.SetActive(InvisibleFloatButton, false, "Invisible")
 
     vu16()
 end)
@@ -10213,8 +10508,8 @@ secUtilityInvisible = Tabs.Utility:AddSection("Invisible", "solar/ghost-bold")
 InvisibleGuiToggle = secUtilityInvisible:AddToggle("InvisibleGuiToggle", {
     Title = "Show Invisible Button",
     Default = false,
-    Callback = function(state)
-        SetFloatingButtonVisible(InvisibleFrame, state)
+    Callback = function(DConfiguration)
+        FloatingButtonModule.SetVisible(InvisibleFrame, DConfiguration)
     end,
 })
 
@@ -10224,14 +10519,14 @@ secUtilityInvisible:AddKeybind("InvisibleKeybind", {
     Default = "I",
     Callback = function()
         vu9 = not vu9
-        SetFloatingButtonActive(InvisibleFloatButton, vu9, "Invisible")
+        FloatingButtonModule.SetActive(InvisibleFloatButton, vu9, "Invisible")
         for _, part in pairs(vu10) do
             part.Transparency = vu9 and 0.5 or 0
         end
     end,
 })
 
-AddFloatingButtonSizeInputs(secUtilityInvisible, "InvisibleBtn", "Invisible")
+FBModule:AddSizeInputs(secUtilityInvisible, "InvisibleBtn", "Invisible")
 
 
 do
@@ -10272,7 +10567,7 @@ do
         FpsStrokeGrad.Parent = FpsStroke
 
         local function UpdateColors()
-            local Grad = getgenv().ButtonGradients
+            local Grad = Fluent:GetButtonGradient() or Fluent.ButtonGradients
             if Grad then
                 if Grad.Background then
                     FpsGradient.Color = Grad.Background
@@ -10362,10 +10657,10 @@ do
     secSettingsFps:AddToggle("FPSCounterToggle", {
         Title = "Show FPS Counter",
         Default = true,
-        Callback = function(state)
+        Callback = function(DConfiguration)
             local counter = getgenv().FpsCounterInstance
             if counter then
-                counter.Enabled = state
+                counter.Enabled = DConfiguration
             end
         end
     })
@@ -10552,13 +10847,294 @@ function UniverseScriptsStuff(Tabs)
 
     pcall(function() makefolder(".temp") end)
 
-    local SecCleostrap = Tabs.Others:AddSection("Cleostrap", "solar/rocket-bold")
-    SecCleostrap:AddButton({
-        Title = "Execute Cleostrap",
-        Callback = function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/StyearX/Cleostrap/refs/heads/main/Initiate.lua", true))()
+    local StoragePath = "GoonWares/Arsenal/FFlags.json"
+
+local FFlagHandler = {}
+
+function FFlagHandler:SetFFlag(flag, value)
+    if type(flag) ~= "string" or flag:gsub(" ", ""):len() == 0 then
+        return false, "InvalidFlagName"
+    end
+
+    local stripped = flag
+        :gsub("^DFInt", "")
+        :gsub("^DFFlag", "")
+        :gsub("^FFlag", "")
+        :gsub("^FInt", "")
+        :gsub("^DFString", "")
+        :gsub("^FString", "")
+
+    local strValue
+    if type(value) == "boolean" then
+        strValue = value and "True" or "False"
+    else
+        strValue = tostring(value)
+    end
+
+    local success = false
+    local method = "Unknown"
+
+    local ok = pcall(setfflag, stripped, strValue)
+    if ok then
+        success = true
+        method = "NativeStripped"
+    else
+        local ok2 = pcall(setfflag, flag, strValue)
+        if ok2 then
+            success = true
+            method = "NativeFull"
+        else
+            local ok3 = pcall(function()
+                if settings() and settings().FFlags then
+                    settings().FFlags[flag] = strValue
+                end
+            end)
+            if ok3 then
+                success = true
+                method = "Settings"
+            end
         end
-    })
+    end
+
+    if success then
+        pcall(function()
+            local raw = readfile(StoragePath)
+            local fflagfile = raw and HttpService:JSONDecode(raw) or {}
+            fflagfile[flag] = strValue
+            writefile(StoragePath, HttpService:JSONEncode(fflagfile))
+        end)
+        return true, method
+    end
+
+    return false, "InjectionFailed"
+end
+
+function FFlagHandler:BulkSet(flagsTable)
+    local results = { success = 0, failed = 0, failedFlags = {} }
+
+    for flag, value in pairs(flagsTable) do
+        local ok = self:SetFFlag(flag, value)
+        if ok then
+            results.success = results.success + 1
+        else
+            results.failed = results.failed + 1
+            table.insert(results.failedFlags, flag)
+        end
+        task.wait(0.05)
+    end
+
+    return results
+end
+
+function FFlagHandler:ClearFlags()
+    pcall(function()
+        writefile(StoragePath, "{}")
+    end)
+    return true
+end
+
+local FFlagPresets = {
+    LagOptimizer = {
+        ["FFlagDebugDisplayFPS"] = true,
+        ["FFlagDebugSkyGray"] = true,
+        ["FIntRenderShadowIntensity"] = 0,
+        ["FFlagGlobalWindRendering"] = false,
+        ["FFlagGlobalWindActivated"] = false,
+        ["DFFlagDebugPauseVoxelizer"] = true,
+        ["DFIntPerformanceControlTextureQualityBestUtility"] = -1,
+        ["DFIntMaxFrameBufferSize"] = 4,
+        ["FIntRenderLocalLightUpdatesMax"] = 8,
+        ["FIntRenderLocalLightUpdatesMin"] = 6,
+        ["FFlagDisablePostFx"] = true,
+    },
+    HighGraphics = {
+        ["FIntRomarkStartWithGraphicQualityLevel"] = 21,
+        ["DFFlagTextureQualityOverrideEnabled"] = true,
+        ["DFIntTextureQualityOverride"] = 3,
+        ["FIntDebugForceMSAASamples"] = 4,
+        ["FIntRenderShadowmapBias"] = 75,
+    },
+    UiCleanup = {
+        ["FFlagAdServiceEnabled"] = false,
+        ["FFlagVoiceBetaBadge"] = false,
+        ["FFlagTopBarUseNewBadge"] = false,
+        ["FFlagEnableBetaBadgeLearnMore"] = false,
+        ["FIntRobloxGuiBlurIntensity"] = 0,
+    },
+    NetworkTweak = {
+        ["FFlagDebugDisableTelemetryEphemeralCounter"] = true,
+        ["FFlagDebugDisableTelemetryEphemeralStat"] = true,
+        ["FFlagDebugDisableTelemetryEventIngest"] = true,
+        ["FFlagDebugDisableTelemetryPoint"] = true,
+        ["FFlagDebugDisableTelemetryV2Counter"] = true,
+        ["FFlagDebugDisableTelemetryV2Event"] = true,
+        ["FFlagDebugDisableTelemetryV2Stat"] = true,
+    },
+}
+
+local secFastFlags = Tabs.Others:AddSection("Fastflags Injector", "solar/programming-bold")
+
+secFastFlags:AddParagraph({
+    Title = "About Fastflags",
+    Content = "Modify internal Roblox client settings. Some changes require a rejoin.",
+})
+
+local ffPresetDropdown = secFastFlags:AddDropdown("FF_PresetSelect", {
+    ThemedDropdown = true,
+    Search = false,
+    Title = "Preset",
+    Icon = "solar/list-bold",
+    Values = { "LagOptimizer", "HighGraphics", "UiCleanup", "NetworkTweak" },
+    Default = "LagOptimizer",
+    Description = "Preconfigured sets of flags for different purposes.",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddButton({
+    Title = "Load Preset",
+    Icon = "solar/download-minimalistic-bold",
+    Callback = function()
+        local selected = ffPresetDropdown.Value
+        local flags = FFlagPresets[selected]
+
+        if not flags then
+            Notify("Fastflags", "No preset selected", "Warning")
+            return
+        end
+
+        local results = FFlagHandler:BulkSet(flags)
+        Notify("Fastflags", string.format("%s loaded: %d success, %d failed", selected, results.success, results.failed), "Success")
+    end,
+})
+
+secFastFlags:AddDivider()
+
+local ffNameInput = secFastFlags:AddInput("FF_FlagName", {
+    Title = "Flag Name",
+    Icon = "solar/pen-bold",
+    Placeholder = "fastflag (String)",
+    Default = "",
+    Callback = function(v) end,
+})
+
+local ffValueInput = secFastFlags:AddInput("FF_FlagValue", {
+    Title = "Flag Value",
+    Icon = "solar/pen-2-bold",
+    Placeholder = "number/boolean",
+    Default = "",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddParagraph({
+    Title = "<b>Single Flag Injection</b>",
+    Content = "Enter the flag name and its value, then click Inject Flag.",
+})
+
+secFastFlags:AddButton({
+    Title = "Inject Flag",
+    Icon = "solar/syringe-bold",
+    Callback = function()
+        local flag = ffNameInput.Value
+        local rawValue = ffValueInput.Value
+
+        if not flag or flag == "" then
+            Notify("Fastflags", "Please enter a flag name", "Warning")
+            return
+        end
+
+        local parsedValue
+        if rawValue:lower() == "true" then
+            parsedValue = true
+        elseif rawValue:lower() == "false" then
+            parsedValue = false
+        elseif tonumber(rawValue) then
+            parsedValue = tonumber(rawValue)
+        else
+            parsedValue = rawValue
+        end
+
+        local ok, method = FFlagHandler:SetFFlag(flag, parsedValue)
+        if ok then
+            Notify("Fastflags", string.format("%s = %s (%s)", flag, tostring(parsedValue), method), "Success")
+        else
+            Notify("Fastflags", string.format("Failed to inject %s. Your executor may not expose setfflag.", flag), "Error")
+        end
+    end,
+})
+
+secFastFlags:AddDivider()
+
+local ffJsonInput = secFastFlags:AddInput("FF_JsonFlags", {
+    Title = "Json Fastflag",
+    Icon = "solar/code-bold",
+    Placeholder = '{ "FFlagDebugDisplayFPS": "True", "FFlagDebugSkyGray": "True" }',
+    Default = "",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddParagraph({
+    Title = "<b>Bulk Json Injection</b>",
+    Content = "Paste a JSON object with multiple flags, then click Inject Json Flags.",
+})
+
+secFastFlags:AddButton({
+    Title = "Inject Json Flags",
+    Icon = "solar/code-2-bold",
+    Callback = function()
+        local json = ffJsonInput.Value
+
+        if not json or json == "" then
+            Notify("Fastflags", "Please enter JSON data", "Warning")
+            return
+        end
+
+        local ok, flags = pcall(function()
+            return HttpService:JSONDecode(json)
+        end)
+
+        if not ok or type(flags) ~= "table" then
+            Notify("Fastflags", "Invalid JSON syntax", "Error")
+            return
+        end
+
+        local results = FFlagHandler:BulkSet(flags)
+        Notify("Fastflags", string.format("Json inject: %d success, %d failed", results.success, results.failed), "Success")
+    end,
+})
+
+secFastFlags:AddDivider()
+
+secFastFlags:AddButton({
+    Title = "Clear Injected Flags",
+    Icon = "solar/trash-bin-trash-bold",
+    Callback = function()
+        FFlagHandler:ClearFlags()
+        Notify("Fastflags", "All saved flags cleared", "Info")
+    end,
+})
+
+secFastFlags:AddButton({
+    Title = "Rejoin To Fully Apply Fastflags",
+    Icon = "solar/restart-bold",
+    Description = "Rejoins the game to fully apply all flags.",
+    Callback = function()
+        Window:Dialog({
+            Title = "Rejoin Required",
+            Content = "Some flags only take full effect after rejoining. Rejoin now?",
+            Buttons = {
+                {
+                    Title = "Rejoin",
+                    Callback = function()
+                        Notify("Fastflags", "Rejoining...", "Info")
+                        task.wait(0.5)
+                        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                    end,
+                },
+                { Title = "Cancel" },
+            },
+        })
+    end,
+})
 
     Tabs.Others:AddSpace({ Height = 20 })
     local SecAvatar = Tabs.Others:AddSection("Avatar", "solar/user-bold")
@@ -10573,9 +11149,9 @@ function UniverseScriptsStuff(Tabs)
     SecDeathSounds:AddToggle("CustomDeathSoundsToggle", {
         Title = "Custom Death Sounds",
         Default = false,
-        Callback = function(state)
-            soundReplacementEnabled = state
-            if state then
+        Callback = function(DConfiguration)
+            soundReplacementEnabled = DConfiguration
+            if DConfiguration then
                 StartReplaceDeathSounds()
             else
                 StopReplaceDeathSounds()
@@ -10957,204 +11533,23 @@ function UniverseScriptsStuff(Tabs)
 end
 UniverseScriptsStuff(Tabs)
 
-MediaManager:SetFolder("GoonWares/MediaCache")
+MediaManager:SetFolder("GoonWares/MurderMystery2/MediaCache")
 
 InterfaceManager:SetLibrary(Fluent)
-InterfaceManager:SetFolder("GoonWares")
+InterfaceManager:SetFolder("GoonWares/MurderMystery2")
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 InterfaceManager:LoadSettings()
 
 SaveManager:SetLibrary(Fluent)
-SaveManager:SetFolder("GoonWares/Config")
+SaveManager:SetFolder("GoonWares/MurderMystery2/Config")
 SaveManager:IgnoreThemeSettings()
 SaveManager:BuildConfigSection(Tabs.Settings)
 SaveManager:LoadAutoloadConfig()
 
 FloatingButtonManager:SetLibrary(Fluent)
-FloatingButtonManager:SetFolder("GoonWares/Floating")
+FloatingButtonManager:SetFolder("GoonWares/MurderMystery2/Floating")
 FloatingButtonManager:BuildConfigSection(Tabs.Settings)
 FloatingButtonManager:LoadAutoloadConfig()
-
-local openshit = Instance.new("ScreenGui")
-openshit.Name = "openshit"
-openshit.Parent = LocalPlayer:WaitForChild("PlayerGui")
-openshit.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-openshit.ResetOnSpawn = false
-
-local mainopen = Instance.new("TextButton")
-mainopen.Name = "mainopen"
-mainopen.Parent = openshit
-mainopen.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainopen.BackgroundTransparency = 1
-mainopen.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
-mainopen.Size = UDim2.new(0, 64, 0, 42)
-mainopen.Text = ""
-mainopen.Visible = true
-
-local mainopens = Instance.new("UICorner")
-mainopens.Parent = mainopen
-
-local SizeBackMulti = 0.1
-local AssetsIcon = "rbxassetid://139095000385640"
-local AssetsBackground = "rbxassetid://109694296016043"
-
-local backgroundImage = Instance.new("ImageLabel")
-backgroundImage.Name = "RotatingBackground"
-backgroundImage.Parent = mainopen
-backgroundImage.Size = UDim2.new(2.3 + SizeBackMulti, 0, 2.3 + SizeBackMulti, 0)
-backgroundImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-backgroundImage.AnchorPoint = Vector2.new(0.5, 0.5)
-backgroundImage.BackgroundTransparency = 1
-backgroundImage.Image = AssetsBackground
-backgroundImage.SizeConstraint = Enum.SizeConstraint.RelativeXX
-backgroundImage.ZIndex = 0
-
-local frontImage = Instance.new("ImageLabel")
-frontImage.Name = "StaticIcon"
-frontImage.Parent = mainopen
-frontImage.Size = UDim2.new(0.8, 0, 1.2, 0)
-frontImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-frontImage.AnchorPoint = Vector2.new(0.5, 0.5)
-frontImage.BackgroundTransparency = 1
-frontImage.Image = AssetsIcon
-frontImage.ZIndex = 1
-
-local frontCorner = Instance.new("UICorner")
-frontCorner.CornerRadius = UDim.new(1, 0)
-frontCorner.Parent = frontImage
-
-local rotation = 0
-local speed = 90 
-local lastTime = tick()
-
-task.spawn(function()
-	while true do
-		local now = tick()
-		local delta = now - lastTime
-		lastTime = now
-		
-		rotation = (rotation + speed * delta) % 360
-		backgroundImage.Rotation = rotation
-
-		task.wait()
-	end
-end)
-
-local function MakeDraggable(topbarobject, object, locked)
-    local Dragging = false
-    local DragInput
-    local DragStart
-    local StartPosition
-
-    local Holding = false
-    local HoldTime = 1.0
-    local MoveCancelThreshold = 6
-    local HoldToken = 0
-
-    object:SetAttribute("Locked", locked or false)
-
-    local function Update(input)
-        if object:GetAttribute("Locked") then return end
-        local delta = input.Position - DragStart
-        object.Position = UDim2.new(
-            StartPosition.X.Scale,
-            StartPosition.X.Offset + delta.X,
-            StartPosition.Y.Scale,
-            StartPosition.Y.Offset + delta.Y
-        )
-    end
-
-    local function ToggleLock()
-        local newState = not object:GetAttribute("Locked")
-        object:SetAttribute("Locked", newState)
-
-        Fluent:Notify({
-            Title = newState and "Button Locked" or "Button Unlocked",
-            Content = newState and "This button is now locked in place." or "This button can now be moved.",
-            Duration = 2
-        })
-    end
-
-    topbarobject.InputBegan:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1
-        and input.UserInputType ~= Enum.UserInputType.Touch then
-            return
-        end
-
-        Dragging = not object:GetAttribute("Locked")
-        Holding = true
-        DragStart = input.Position
-        StartPosition = object.Position
-
-        HoldToken += 1
-        local token = HoldToken
-
-        task.delay(HoldTime, function()
-            if Holding and token == HoldToken then
-                ToggleLock()
-            end
-        end)
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                Dragging = false
-                Holding = false
-            end
-        end)
-    end)
-
-    topbarobject.InputChanged:Connect(function(input)
-        if not DragStart then return end
-
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
-            if (input.Position - DragStart).Magnitude > MoveCancelThreshold then
-                Holding = false
-            end
-            DragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == DragInput and Dragging then
-            Update(input)
-        end
-    end)
-end
-
-MakeDraggable(mainopen, mainopen, false)
-
-local function playSound(soundId)
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://" .. soundId
-    sound.Parent = game:GetService("SoundService")
-    sound:Play()
-    sound.Ended:Connect(function()
-        sound:Destroy()
-    end)
-end
-
-mainopen.MouseButton1Click:Connect(function()
-    local sounds = { "", "", "" }
-    playSound(sounds[math.random(#sounds)])
-    Window:Minimize()
-
-    local function smoothSpeed(target, duration)
-        local start = speed
-        local steps = 30
-        for i = 1, steps do
-            speed = start + (target - start) * (i / steps)
-            task.wait(duration / steps)
-        end
-        speed = target
-    end
-    
-    smoothSpeed(360, 0.4)
-    task.wait(0.5)
-    smoothSpeed(180, 0.4)
-    task.wait(0.3)
-    smoothSpeed(90, 0.4)
-end)
 
 Notify("GoonWares", "All tabs loaded successfully", "Success", nil, 4)
 
