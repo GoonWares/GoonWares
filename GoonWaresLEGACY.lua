@@ -1,3 +1,13 @@
+if getgenv().GoonWaresExecuted then
+    game:GetService("StarterGui"):SetCore("SendNotification", {
+        Title = "WARNING!",
+        Text = "Script Is Already Loaded, rejoin if you want to re-execute.",
+        Duration = 8,
+    })
+    return
+end
+
+getgenv().GoonWaresExecuted = true
 Workspace = game:GetService("Workspace")
 RunService = game:GetService("RunService")
 Players = game:GetService("Players")
@@ -11,22 +21,12 @@ TweenService = game:GetService("TweenService")
 PathfindingService = game:GetService("PathfindingService")
 CAS = game:GetService("ContextActionService")
 
-local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/Fluent-modded/releases/download/1.5.4/FluentPro"))()
-
-if getgenv().GoonWaresExecuted then
-    game:GetService("StarterGui"):SetCore("SendNotification", {
-        Title = "WARNING!",
-        Text = "Script Is Already Loaded, rejoin if you want to re-execute.",
-        Duration = 8,
-    })
-    return
-end
-getgenv().GoonWaresExecuted = true
+local Fluent = loadstring(game:HttpGet("https://github.com/StyearX/GoonWares/releases/download/FluentPro/Main.lua"))()
 
 isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
 
-function Notify(title, content, ntype, icon, duration)
-    Fluent:Notify({ Title = title, Content = content, Type = ntype or "Info", Icon = icon, Duration = duration or 3 })
+function Notify(Title, Content, NType, Icon, Duration)
+    Fluent:Notify({ Title = Title, Content = Content, Type = NType or "Info", Icon = Icon, Duration = Duration or 3 })
 end
 
 task.spawn(function()
@@ -47,6 +47,258 @@ task.spawn(function()
         6
     )
 end)
+
+isMobile = UserInputService.TouchEnabled and not UserInputService.MouseEnabled and not UserInputService.KeyboardEnabled
+
+OpenShit = Instance.new("ScreenGui")
+OpenShit.Name = "OpenShit"
+OpenShit.Parent = LocalPlayer:WaitForChild("PlayerGui")
+OpenShit.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+OpenShit.ResetOnSpawn = false
+
+MainOpen = Instance.new("TextButton")
+MainOpen.Name = "MainOpen"
+MainOpen.Parent = OpenShit
+MainOpen.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+MainOpen.BackgroundTransparency = 1
+MainOpen.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
+MainOpen.Size = UDim2.new(0, 64, 0, 42)
+MainOpen.Text = ""
+MainOpen.Visible = true
+
+MainOpenCorner = Instance.new("UICorner")
+MainOpenCorner.Parent = MainOpen
+
+SizeBackMulti = 0.1
+AssetsIcon = "rbxassetid://139095000385640"
+AssetsBackground = "rbxassetid://109694296016043"
+
+BackgroundImage = Instance.new("ImageLabel")
+BackgroundImage.Name = "RotatingBackground"
+BackgroundImage.Parent = MainOpen
+BackgroundImage.Size = UDim2.new(2.3 + SizeBackMulti, 0, 2.3 + SizeBackMulti, 0)
+BackgroundImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+BackgroundImage.AnchorPoint = Vector2.new(0.5, 0.5)
+BackgroundImage.BackgroundTransparency = 1
+BackgroundImage.Image = AssetsBackground
+BackgroundImage.SizeConstraint = Enum.SizeConstraint.RelativeXX
+BackgroundImage.ZIndex = 0
+
+FrontImage = Instance.new("ImageLabel")
+FrontImage.Name = "StaticIcon"
+FrontImage.Parent = MainOpen
+FrontImage.Size = UDim2.new(0.8, 0, 1.2, 0)
+FrontImage.Position = UDim2.new(0.5, 0, 0.5, 0)
+FrontImage.AnchorPoint = Vector2.new(0.5, 0.5)
+FrontImage.BackgroundTransparency = 1
+FrontImage.Image = AssetsIcon
+FrontImage.ZIndex = 1
+
+FrontCorner = Instance.new("UICorner")
+FrontCorner.CornerRadius = UDim.new(1, 0)
+FrontCorner.Parent = FrontImage
+
+local Rotation = 0
+local Speed = 90
+local LastTime = tick()
+
+task.spawn(function()
+    while true do
+        local Now = tick()
+        local Delta = Now - LastTime
+        LastTime = Now
+        Rotation = (Rotation + Speed * Delta) % 360
+        BackgroundImage.Rotation = Rotation
+        task.wait()
+    end
+end)
+
+function MakeDraggable(TopbarObject, Object, Locked)
+    local Dragging = false
+    local DragInput
+    local DragStart
+    local StartPosition
+    local Holding = false
+    local HoldTime = 1.0
+    local MoveCancelThreshold = 6
+    local HoldToken = 0
+
+    Object:SetAttribute("Locked", Locked or false)
+
+    local function Update(Input)
+        if Object:GetAttribute("Locked") then return end
+        local Delta = Input.Position - DragStart
+        Object.Position = UDim2.new(
+            StartPosition.X.Scale,
+            StartPosition.X.Offset + Delta.X,
+            StartPosition.Y.Scale,
+            StartPosition.Y.Offset + Delta.Y
+        )
+    end
+
+    local function ToggleLock()
+        local NewState = not Object:GetAttribute("Locked")
+        Object:SetAttribute("Locked", NewState)
+        Fluent:Notify({
+            Title = NewState and "Button Locked" or "Button Unlocked",
+            Content = NewState and "This button is now locked in place." or "This button can now be moved.",
+            Duration = 2
+        })
+    end
+
+    TopbarObject.InputBegan:Connect(function(Input)
+        if Input.UserInputType ~= Enum.UserInputType.MouseButton1 and Input.UserInputType ~= Enum.UserInputType.Touch then return end
+        Dragging = not Object:GetAttribute("Locked")
+        Holding = true
+        DragStart = Input.Position
+        StartPosition = Object.Position
+        HoldToken += 1
+        local Token = HoldToken
+        task.delay(HoldTime, function()
+            if Holding and Token == HoldToken then ToggleLock() end
+        end)
+        Input.Changed:Connect(function()
+            if Input.UserInputState == Enum.UserInputState.End then
+                Dragging = false
+                Holding = false
+            end
+        end)
+    end)
+
+    TopbarObject.InputChanged:Connect(function(Input)
+        if not DragStart then return end
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            if (Input.Position - DragStart).Magnitude > MoveCancelThreshold then Holding = false end
+            DragInput = Input
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(Input)
+        if Input == DragInput and Dragging then Update(Input) end
+    end)
+end
+
+MakeDraggable(MainOpen, MainOpen, false)
+
+local function PlaySound(SoundId)
+    local Sound = Instance.new("Sound")
+    Sound.SoundId = "rbxassetid://" .. SoundId
+    Sound.Parent = game:GetService("SoundService")
+    Sound:Play()
+    Sound.Ended:Connect(function()
+        Sound:Destroy()
+    end)
+end
+
+MainOpen.MouseButton1Click:Connect(function()
+    local Sounds = { "7127123605", "137566474343039", "438666542", "257001341", "257000833", "7127123554", "131607746976396", "97325669841459", "109312518223078" }
+    PlaySound(Sounds[math.random(#Sounds)])
+    Window:Minimize()
+    local function SmoothSpeed(Target, Duration)
+        local Start = Speed
+        local Steps = 30
+        for I = 1, Steps do
+            Speed = Start + (Target - Start) * (I / Steps)
+            task.wait(Duration / Steps)
+        end
+        Speed = Target
+    end
+    SmoothSpeed(360, 0.4)
+    task.wait(0.5)
+    SmoothSpeed(180, 0.4)
+    task.wait(0.3)
+    SmoothSpeed(90, 0.4)
+end)
+
+Fluent:RegisterCustomTheme("AzureLights", {
+    Accent = Color3.fromRGB(70, 130, 255),
+    AcrylicMain = Color3.fromRGB(248, 248, 248),
+    AcrylicBorder = Color3.fromRGB(200, 200, 200),
+    AcrylicGradient = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(50, 150, 255)),
+        ColorSequenceKeypoint.new(0.2, Color3.fromRGB(100, 200, 255)),
+        ColorSequenceKeypoint.new(0.4, Color3.fromRGB(160, 230, 255)),
+        ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 250, 255)),
+        ColorSequenceKeypoint.new(0.8, Color3.fromRGB(180, 220, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 150, 255))
+    }),
+    AcrylicNoise = 0.91,
+    TitleBarLine = Color3.fromRGB(200, 200, 200),
+    Tab = Color3.fromRGB(235, 235, 235),
+    Element = Color3.fromRGB(235, 235, 235),
+    ElementBorder = Color3.fromRGB(180, 180, 180),
+    InElementBorder = Color3.fromRGB(200, 200, 200),
+    ElementTransparency = 0.9,
+    ElementBorderThickness = 1,
+    ToggleSlider = Color3.fromRGB(200, 200, 200),
+    ToggleToggled = Color3.fromRGB(70, 130, 255),
+    SliderRail = Color3.fromRGB(200, 200, 200),
+    CheckboxUnchecked = Color3.fromRGB(200, 200, 200),
+    CheckboxChecked = Color3.fromRGB(70, 130, 255),
+    CheckboxCheck = Color3.fromRGB(255, 255, 255),
+    ProgressBarRail = Color3.fromRGB(200, 200, 200),
+    ProgressBarFill = Color3.fromRGB(70, 130, 255),
+    DropdownFrame = Color3.fromRGB(255, 255, 255),
+    DropdownHolder = Color3.fromRGB(240, 240, 240),
+    DropdownBorder = Color3.fromRGB(180, 180, 180),
+    DropdownOption = Color3.fromRGB(235, 235, 235),
+    DropdownBorderThickness = 1,
+    Keybind = Color3.fromRGB(235, 235, 235),
+    Input = Color3.fromRGB(255, 255, 255),
+    InputFocused = Color3.fromRGB(255, 255, 255),
+    InputIndicator = Color3.fromRGB(70, 130, 255),
+    Dialog = Color3.fromRGB(255, 255, 255),
+    DialogHolder = Color3.fromRGB(240, 240, 240),
+    DialogHolderLine = Color3.fromRGB(200, 200, 200),
+    DialogButton = Color3.fromRGB(248, 248, 248),
+    DialogButtonBorder = Color3.fromRGB(200, 200, 200),
+    DialogBorder = Color3.fromRGB(180, 180, 180),
+    DialogInput = Color3.fromRGB(255, 255, 255),
+    DialogInputLine = Color3.fromRGB(200, 200, 200),
+    Text = Color3.fromRGB(30, 30, 30),
+    SubText = Color3.fromRGB(100, 100, 100),
+    Hover = Color3.fromRGB(220, 220, 220),
+    HoverChange = 0.05,
+    Background = "https://raw.githubusercontent.com/StyearX/Script/main/not%20a%20luau/Background.webm",
+    BackgroundTransparency = 0,
+    BackgroundImagesRectPosition = nil,
+    BackgroundImagesRectSize = nil,
+    ViewportBackground = Color3.fromRGB(240, 240, 240),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(248, 248, 248),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.6,
+        RotationSpeed = 30,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(80, 180, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(150, 220, 255)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 250, 255)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(150, 220, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(80, 180, 255))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(180, 180, 180),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 235, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(170, 210, 250))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(70, 130, 255)),
+            ColorSequenceKeypoint.new(0.3, Color3.fromRGB(150, 200, 255)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(220, 240, 255)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(70, 130, 255))
+        })
+    },
+    DiscordJoinButton = Color3.fromRGB(88, 101, 242),
+    WarningNotifyColor = Color3.fromRGB(255, 185, 30),
+    SuccessNotifyColor = Color3.fromRGB(50, 205, 80),
+    ErrorNotifyColor = Color3.fromRGB(220, 55, 55),
+    InfoNotifyColor = Color3.fromRGB(76, 194, 255)
+})
 
 Fluent:RegisterCustomTheme("Azure", {
     Accent = Color3.fromRGB(50, 150, 255),
@@ -186,40 +438,103 @@ Fluent:RegisterCustomTheme("Scarlet", {
     }
 })
 
-local function getPlayerLevel()
-    local player = game:GetService("Players").LocalPlayer
-    local lv = player:GetAttribute("Level") or player:GetAttribute("level")
-        or player:GetAttribute("LVL") or player:GetAttribute("PlayerLevel")
-    if lv then return tostring(lv) end
-    local ls = player:FindFirstChild("leaderstats")
-    if ls then
-        local node = ls:FindFirstChild("Level") or ls:FindFirstChild("level")
-            or ls:FindFirstChild("LVL") or ls:FindFirstChild("XP")
-        if node then return tostring(node.Value) end
-    end
-    return "?"
-end
+Fluent:RegisterCustomTheme("Toxic", {
+    Accent = Color3.fromRGB(140, 255, 80),
+    AcrylicMain = Color3.fromRGB(20, 30, 15),
+    AcrylicBorder = Color3.fromRGB(120, 220, 90),
+    AcrylicGradient = ColorSequence.new(Color3.fromRGB(45, 75, 30), Color3.fromRGB(12, 20, 10)),
+    AcrylicNoise = 0.90,
+    TitleBarLine = Color3.fromRGB(160, 255, 110),
+    Tab = Color3.fromRGB(28, 45, 22),
+    Element = Color3.fromRGB(38, 60, 30),
+    ElementBorder = Color3.fromRGB(150, 240, 100),
+    InElementBorder = Color3.fromRGB(120, 210, 90),
+    ElementTransparency = 0.92,
+    ToggleSlider = Color3.fromRGB(220, 255, 200),
+    ToggleToggled = Color3.fromRGB(140, 255, 80),
+    SliderRail = Color3.fromRGB(80, 130, 60),
+    DropdownFrame = Color3.fromRGB(22, 38, 18),
+    DropdownHolder = Color3.fromRGB(16, 28, 13),
+    DropdownBorder = Color3.fromRGB(120, 210, 90),
+    DropdownOption = Color3.fromRGB(36, 58, 28),
+    Keybind = Color3.fromRGB(22, 38, 18),
+    Input = Color3.fromRGB(22, 38, 18),
+    InputFocused = Color3.fromRGB(44, 68, 35),
+    InputIndicator = Color3.fromRGB(150, 240, 100),
+    Dialog = Color3.fromRGB(20, 30, 15),
+    DialogHolder = Color3.fromRGB(15, 24, 12),
+    DialogHolderLine = Color3.fromRGB(160, 250, 110),
+    DialogButton = Color3.fromRGB(38, 60, 30),
+    DialogButtonBorder = Color3.fromRGB(160, 250, 110),
+    DialogBorder = Color3.fromRGB(120, 210, 90),
+    DialogInput = Color3.fromRGB(22, 38, 18),
+    DialogInputLine = Color3.fromRGB(150, 240, 100),
+    Text = Color3.fromRGB(240, 255, 235),
+    SubText = Color3.fromRGB(205, 235, 195),
+    Hover = Color3.fromRGB(255, 255, 255),
+    HoverChange = 0.08,
+    Background = "rbxassetid://91484259372386",
+    BackgroundTransparency = 0.12,
+    ViewportBackground = Color3.fromRGB(15, 24, 12),
+    ViewportBackgroundImages = true,
+    DropdownOutsideWindowBackground = Color3.fromRGB(16, 28, 13),
+    DropdownOutsideWindowBackgroundImages = true,
+    ShineEnabled = true,
+    Shine = {
+        Speed = 0.35,
+        RotationSpeed = 15,
+        ColorSequence = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(140, 255, 80)),
+            ColorSequenceKeypoint.new(0.2, Color3.fromRGB(180, 255, 120)),
+            ColorSequenceKeypoint.new(0.4, Color3.fromRGB(220, 255, 170)),
+            ColorSequenceKeypoint.new(0.6, Color3.fromRGB(255, 255, 220)),
+            ColorSequenceKeypoint.new(0.8, Color3.fromRGB(200, 255, 150)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(140, 255, 80))
+        })
+    },
+    StrokeShine = true,
+    StrokeDark = Color3.fromRGB(70, 120, 50),
+    ButtonGradient = {
+        Background = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(150, 255, 90)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 150, 30))
+        }),
+        Stroke = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, Color3.fromRGB(210, 255, 180)),
+            ColorSequenceKeypoint.new(0.5, Color3.fromRGB(150, 240, 100)),
+            ColorSequenceKeypoint.new(1, Color3.fromRGB(120, 210, 90))
+        })
+    }
+})
 
 Window = Fluent:CreateWindow({
     Title = "GoonWares",
     SubTitle = "Made by: StyearX",
     TabWidth = isMobile and 130 or 150,
     Tags = {
-        { Text = "Legacy Evade", Color = Color3.fromRGB(211, 15, 40) },
-        { Text = "Evade", Color = Color3.fromRGB(180, 10, 20) },
+        { Text = ExecutorName, Color = Color3.fromRGB(200, 200, 200) },
+        { Text = "Hello " .. tostring(LocalPlayer.DisplayName), Color = Color3.fromRGB(211, 20, 10) },
     },
-    Version = "Version 1.5",
+    Version = "Evade/Legacy",
     Acrylic = true,
-    Size = isMobile and UDim2.fromOffset(480, 490) or UDim2.fromOffset(580, 560),
+    Size = isMobile and UDim2.fromOffset(500, 500) or UDim2.fromOffset(580, 580),
     Theme = "Crimson",
-    Search = true,
-    SearchInHeader = true,
     Icons = "rbxassetid://139095000385640",
     TitleIcon = "rbxassetid://139379979502671",
+    Font = "GothamSSm", 
     UserInfoTop = true,
-    UserInfoTitle   = "level " .. getPlayerLevel(),
+    UserInfoTitle = LocalPlayer.Name,
     UserInfoSubtitle = LocalPlayer.DisplayName,
-    MinimizeKey = Enum.KeyCode.LeftControl,
+    Anonymous = {                 
+        Default = false,        
+        ShowAno = true,         
+        AnoUserInfoTitle = "hides",
+        AnoUserInfoSubTitle = "hides",
+        Icons = "rbxassetid://139095000385640", 
+    },
+    MinimizeKey = Enum.KeyCode.G,
+    FolderName   = "GoonWares",  
+    ScreenGuiName = "Legacy Evade",
 })
 
 Tabs = { 
@@ -232,185 +547,75 @@ Tabs = {
     Extension = Window:AddTab({ Title = "|  Extension", Icon = "rbxassetid://10734930886" })
 }
 
-openshit = Instance.new("ScreenGui")
-openshit.Name = "openshit"
-openshit.Parent = LocalPlayer:WaitForChild("PlayerGui")
-openshit.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-openshit.ResetOnSpawn = false
-
-mainopen = Instance.new("TextButton")
-mainopen.Name = "mainopen"
-mainopen.Parent = openshit
-mainopen.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-mainopen.BackgroundTransparency = 1
-mainopen.Position = UDim2.new(0.101969875, 0, 0.110441767, 0)
-mainopen.Size = UDim2.new(0, 64, 0, 42)
-mainopen.Text = ""
-mainopen.Visible = true
-
-mainopens = Instance.new("UICorner")
-mainopens.Parent = mainopen
-
-SizeBackMulti = 0.1
-AssetsIcon = "rbxassetid://139095000385640"
-AssetsBackground = "rbxassetid://109694296016043"
-
-backgroundImage = Instance.new("ImageLabel")
-backgroundImage.Name = "RotatingBackground"
-backgroundImage.Parent = mainopen
-backgroundImage.Size = UDim2.new(2.3 + SizeBackMulti, 0, 2.3 + SizeBackMulti, 0)
-backgroundImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-backgroundImage.AnchorPoint = Vector2.new(0.5, 0.5)
-backgroundImage.BackgroundTransparency = 1
-backgroundImage.Image = AssetsBackground
-backgroundImage.SizeConstraint = Enum.SizeConstraint.RelativeXX
-backgroundImage.ZIndex = 0
-
-frontImage = Instance.new("ImageLabel")
-frontImage.Name = "StaticIcon"
-frontImage.Parent = mainopen
-frontImage.Size = UDim2.new(0.8, 0, 1.2, 0)
-frontImage.Position = UDim2.new(0.5, 0, 0.5, 0)
-frontImage.AnchorPoint = Vector2.new(0.5, 0.5)
-frontImage.BackgroundTransparency = 1
-frontImage.Image = AssetsIcon
-frontImage.ZIndex = 1
-
-frontCorner = Instance.new("UICorner")
-frontCorner.CornerRadius = UDim.new(1, 0)
-frontCorner.Parent = frontImage
-
-local rotation = 0
-local speed = 90 
-local lastTime = tick()
-
 task.spawn(function()
-	while true do
-		local now = tick()
-		local delta = now - lastTime
-		lastTime = now
-		
-		rotation = (rotation + speed * delta) % 360
-		backgroundImage.Rotation = rotation
-
-		task.wait()
-	end
-end)
-
-local function MakeDraggable(topbarobject, object, locked)
-    local Dragging = false
-    local DragInput
-    local DragStart
-    local StartPosition
-
-    local Holding = false
-    local HoldTime = 1.0
-    local MoveCancelThreshold = 6
-    local HoldToken = 0
-
-    object:SetAttribute("Locked", locked or false)
-
-    local function Update(input)
-        if object:GetAttribute("Locked") then return end
-        local delta = input.Position - DragStart
-        object.Position = UDim2.new(
-            StartPosition.X.Scale,
-            StartPosition.X.Offset + delta.X,
-            StartPosition.Y.Scale,
-            StartPosition.Y.Offset + delta.Y
-        )
+    local hasAccepted = false
+    local dialogResult = nil
+    
+    Window:Dialog({
+        Title = "accept pls",
+        Content = "Accept nga",
+        Buttons = {
+            {
+                Title = "Accept",
+                Callback = function()
+                    dialogResult = "accept"
+                    hasAccepted = true
+                    
+                    local success, err = pcall(function()
+                        local TextChatService = game:GetService("TextChatService")
+                        local message = "As someone with skill issues I would use exploits "
+                        
+                        for _, channel in pairs(TextChatService.TextChannels:GetChildren()) do
+                            if channel.Name ~= "RBXSystem" then
+                                channel:SendAsync(message)
+                            end
+                        end
+                    end)
+                    
+                    if success then
+                        Fluent:Notify({
+                            Title = "the loser accept ",
+                            Content = "Thank you for supporting GoonWares!",
+                            Duration = 3
+                        })
+                    else
+                        Fluent:Notify({
+                            Title = "failed",
+                            Content = "Failed to send message: " .. tostring(err),
+                            Duration = 3
+                        })
+                    end
+                end
+            },
+            {
+                Title = "No",
+                Callback = function()
+                    dialogResult = "deny"
+                    hasAccepted = true
+                    Fluent:Notify({
+                        Title = "the loser refused ",
+                        Content = "Alright,",
+                        Duration = 2
+                    })
+                end
+            }
+        }
+    })
+    
+    local timeout = 300
+    local startTime = tick()
+    
+    while not hasAccepted and tick() - startTime < timeout do
+        task.wait(0.1)
     end
-
-    local function ToggleLock()
-        local newState = not object:GetAttribute("Locked")
-        object:SetAttribute("Locked", newState)
-
+    
+    if not hasAccepted then
         Fluent:Notify({
-            Title = newState and "Button Locked" or "Button Unlocked",
-            Content = newState and "This button is now locked in place." or "This button can now be moved.",
+            Title = "timeout",
+            Content = "No response received, skipping Traps.",
             Duration = 2
         })
     end
-
-    topbarobject.InputBegan:Connect(function(input)
-        if input.UserInputType ~= Enum.UserInputType.MouseButton1
-        and input.UserInputType ~= Enum.UserInputType.Touch then
-            return
-        end
-
-        Dragging = not object:GetAttribute("Locked")
-        Holding = true
-        DragStart = input.Position
-        StartPosition = object.Position
-
-        HoldToken += 1
-        local token = HoldToken
-
-        task.delay(HoldTime, function()
-            if Holding and token == HoldToken then
-                ToggleLock()
-            end
-        end)
-
-        input.Changed:Connect(function()
-            if input.UserInputState == Enum.UserInputState.End then
-                Dragging = false
-                Holding = false
-            end
-        end)
-    end)
-
-    topbarobject.InputChanged:Connect(function(input)
-        if not DragStart then return end
-
-        if input.UserInputType == Enum.UserInputType.MouseMovement
-        or input.UserInputType == Enum.UserInputType.Touch then
-            if (input.Position - DragStart).Magnitude > MoveCancelThreshold then
-                Holding = false
-            end
-            DragInput = input
-        end
-    end)
-
-    UserInputService.InputChanged:Connect(function(input)
-        if input == DragInput and Dragging then
-            Update(input)
-        end
-    end)
-end
-
-MakeDraggable(mainopen, mainopen, false)
-
-local function playSound(soundId)
-    local sound = Instance.new("Sound")
-    sound.SoundId = "rbxassetid://" .. soundId
-    sound.Parent = game:GetService("SoundService")
-    sound:Play()
-    sound.Ended:Connect(function()
-        sound:Destroy()
-    end)
-end
-
-mainopen.MouseButton1Click:Connect(function()
-    local sounds = { "7127123605", "137566474343039", "438666542", "257001341", "257000833", "7127123554", "131607746976396", "97325669841459", "109312518223078" }
-    playSound(sounds[math.random(#sounds)])
-    Window:Minimize()
-
-    local function smoothSpeed(target, duration)
-        local start = speed
-        local steps = 30
-        for i = 1, steps do
-            speed = start + (target - start) * (i / steps)
-            task.wait(duration / steps)
-        end
-        speed = target
-    end
-    
-    smoothSpeed(360, 0.4)
-    task.wait(0.5)
-    smoothSpeed(180, 0.4)
-    task.wait(0.3)
-    smoothSpeed(90, 0.4)
 end)
 
 function UniverseServerTools(Tabs)
@@ -5840,6 +6045,295 @@ SecUILibrary:AddCode({
     OnCopy = function() Notify("Link", "Copied", "Info", nil, 2) end,
 })
 
+local StoragePath = "GoonWares/Evade/FFlags.json"
+
+local FFlagHandler = {}
+
+function FFlagHandler:SetFFlag(flag, value)
+    if type(flag) ~= "string" or flag:gsub(" ", ""):len() == 0 then
+        return false, "InvalidFlagName"
+    end
+
+    local stripped = flag
+        :gsub("^DFInt", "")
+        :gsub("^DFFlag", "")
+        :gsub("^FFlag", "")
+        :gsub("^FInt", "")
+        :gsub("^DFString", "")
+        :gsub("^FString", "")
+
+    local strValue
+    if type(value) == "boolean" then
+        strValue = value and "True" or "False"
+    else
+        strValue = tostring(value)
+    end
+
+    local success = false
+    local method = "Unknown"
+
+    local ok = pcall(setfflag, stripped, strValue)
+    if ok then
+        success = true
+        method = "NativeStripped"
+    else
+        local ok2 = pcall(setfflag, flag, strValue)
+        if ok2 then
+            success = true
+            method = "NativeFull"
+        else
+            local ok3 = pcall(function()
+                if settings() and settings().FFlags then
+                    settings().FFlags[flag] = strValue
+                end
+            end)
+            if ok3 then
+                success = true
+                method = "Settings"
+            end
+        end
+    end
+
+    if success then
+        pcall(function()
+            local raw = readfile(StoragePath)
+            local fflagfile = raw and HttpService:JSONDecode(raw) or {}
+            fflagfile[flag] = strValue
+            writefile(StoragePath, HttpService:JSONEncode(fflagfile))
+        end)
+        return true, method
+    end
+
+    return false, "InjectionFailed"
+end
+
+function FFlagHandler:BulkSet(flagsTable)
+    local results = { success = 0, failed = 0, failedFlags = {} }
+
+    for flag, value in pairs(flagsTable) do
+        local ok = self:SetFFlag(flag, value)
+        if ok then
+            results.success = results.success + 1
+        else
+            results.failed = results.failed + 1
+            table.insert(results.failedFlags, flag)
+        end
+        task.wait(0.05)
+    end
+
+    return results
+end
+
+function FFlagHandler:ClearFlags()
+    pcall(function()
+        writefile(StoragePath, "{}")
+    end)
+    return true
+end
+
+local FFlagPresets = {
+    LagOptimizer = {
+        ["FFlagDebugDisplayFPS"] = true,
+        ["FFlagDebugSkyGray"] = true,
+        ["FIntRenderShadowIntensity"] = 0,
+        ["FFlagGlobalWindRendering"] = false,
+        ["FFlagGlobalWindActivated"] = false,
+        ["DFFlagDebugPauseVoxelizer"] = true,
+        ["DFIntPerformanceControlTextureQualityBestUtility"] = -1,
+        ["DFIntMaxFrameBufferSize"] = 4,
+        ["FIntRenderLocalLightUpdatesMax"] = 8,
+        ["FIntRenderLocalLightUpdatesMin"] = 6,
+        ["FFlagDisablePostFx"] = true,
+    },
+    HighGraphics = {
+        ["FIntRomarkStartWithGraphicQualityLevel"] = 21,
+        ["DFFlagTextureQualityOverrideEnabled"] = true,
+        ["DFIntTextureQualityOverride"] = 3,
+        ["FIntDebugForceMSAASamples"] = 4,
+        ["FIntRenderShadowmapBias"] = 75,
+    },
+    UiCleanup = {
+        ["FFlagAdServiceEnabled"] = false,
+        ["FFlagVoiceBetaBadge"] = false,
+        ["FFlagTopBarUseNewBadge"] = false,
+        ["FFlagEnableBetaBadgeLearnMore"] = false,
+        ["FIntRobloxGuiBlurIntensity"] = 0,
+    },
+    NetworkTweak = {
+        ["FFlagDebugDisableTelemetryEphemeralCounter"] = true,
+        ["FFlagDebugDisableTelemetryEphemeralStat"] = true,
+        ["FFlagDebugDisableTelemetryEventIngest"] = true,
+        ["FFlagDebugDisableTelemetryPoint"] = true,
+        ["FFlagDebugDisableTelemetryV2Counter"] = true,
+        ["FFlagDebugDisableTelemetryV2Event"] = true,
+        ["FFlagDebugDisableTelemetryV2Stat"] = true,
+    },
+}
+
+local secFastFlags = Tabs.Extension:AddSection("Fastflags Injector", "solar/programming-bold")
+
+secFastFlags:AddParagraph({
+    Title = "About Fastflags",
+    Content = "Modify internal Roblox client settings. Some changes require a rejoin.",
+})
+
+local ffPresetDropdown = secFastFlags:AddDropdown("FF_PresetSelect", {
+    ThemedDropdown = true,
+    Search = false,
+    Title = "Preset",
+    Icon = "solar/list-bold",
+    Values = { "LagOptimizer", "HighGraphics", "UiCleanup", "NetworkTweak" },
+    Default = "LagOptimizer",
+    Description = "Preconfigured sets of flags for different purposes.",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddButton({
+    Title = "Load Preset",
+    Icon = "solar/download-minimalistic-bold",
+    Callback = function()
+        local selected = ffPresetDropdown.Value
+        local flags = FFlagPresets[selected]
+
+        if not flags then
+            Notify("Fastflags", "No preset selected", "Warning")
+            return
+        end
+
+        local results = FFlagHandler:BulkSet(flags)
+        Notify("Fastflags", string.format("%s loaded: %d success, %d failed", selected, results.success, results.failed), "Success")
+    end,
+})
+
+secFastFlags:AddDivider()
+
+local ffNameInput = secFastFlags:AddInput("FF_FlagName", {
+    Title = "Flag Name",
+    Icon = "solar/pen-bold",
+    Placeholder = "fastflag (String)",
+    Default = "",
+    Callback = function(v) end,
+})
+
+local ffValueInput = secFastFlags:AddInput("FF_FlagValue", {
+    Title = "Flag Value",
+    Icon = "solar/pen-2-bold",
+    Placeholder = "number/boolean",
+    Default = "",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddParagraph({
+    Title = "<b>Single Flag Injection</b>",
+    Content = "Enter the flag name and its value, then click Inject Flag.",
+})
+
+secFastFlags:AddButton({
+    Title = "Inject Flag",
+    Icon = "solar/syringe-bold",
+    Callback = function()
+        local flag = ffNameInput.Value
+        local rawValue = ffValueInput.Value
+
+        if not flag or flag == "" then
+            Notify("Fastflags", "Please enter a flag name", "Warning")
+            return
+        end
+
+        local parsedValue
+        if rawValue:lower() == "true" then
+            parsedValue = true
+        elseif rawValue:lower() == "false" then
+            parsedValue = false
+        elseif tonumber(rawValue) then
+            parsedValue = tonumber(rawValue)
+        else
+            parsedValue = rawValue
+        end
+
+        local ok, method = FFlagHandler:SetFFlag(flag, parsedValue)
+        if ok then
+            Notify("Fastflags", string.format("%s = %s (%s)", flag, tostring(parsedValue), method), "Success")
+        else
+            Notify("Fastflags", string.format("Failed to inject %s. Your executor may not expose setfflag.", flag), "Error")
+        end
+    end,
+})
+
+secFastFlags:AddDivider()
+
+local ffJsonInput = secFastFlags:AddInput("FF_JsonFlags", {
+    Title = "Json Fastflag",
+    Icon = "solar/code-bold",
+    Placeholder = '{ "FFlagDebugDisplayFPS": "True", "FFlagDebugSkyGray": "True" }',
+    Default = "",
+    Callback = function(v) end,
+})
+
+secFastFlags:AddParagraph({
+    Title = "<b>Bulk Json Injection</b>",
+    Content = "Paste a JSON object with multiple flags, then click Inject Json Flags.",
+})
+
+secFastFlags:AddButton({
+    Title = "Inject Json Flags",
+    Icon = "solar/code-2-bold",
+    Callback = function()
+        local json = ffJsonInput.Value
+
+        if not json or json == "" then
+            Notify("Fastflags", "Please enter JSON data", "Warning")
+            return
+        end
+
+        local ok, flags = pcall(function()
+            return HttpService:JSONDecode(json)
+        end)
+
+        if not ok or type(flags) ~= "table" then
+            Notify("Fastflags", "Invalid JSON syntax", "Error")
+            return
+        end
+
+        local results = FFlagHandler:BulkSet(flags)
+        Notify("Fastflags", string.format("Json inject: %d success, %d failed", results.success, results.failed), "Success")
+    end,
+})
+
+secFastFlags:AddDivider()
+
+secFastFlags:AddButton({
+    Title = "Clear Injected Flags",
+    Icon = "solar/trash-bin-trash-bold",
+    Callback = function()
+        FFlagHandler:ClearFlags()
+        Notify("Fastflags", "All saved flags cleared", "Info")
+    end,
+})
+
+secFastFlags:AddButton({
+    Title = "Rejoin To Fully Apply Fastflags",
+    Icon = "solar/restart-bold",
+    Description = "Rejoins the game to fully apply all flags.",
+    Callback = function()
+        Window:Dialog({
+            Title = "Rejoin Required",
+            Content = "Some flags only take full effect after rejoining. Rejoin now?",
+            Buttons = {
+                {
+                    Title = "Rejoin",
+                    Callback = function()
+                        Notify("Fastflags", "Rejoining...", "Info")
+                        task.wait(0.5)
+                        TeleportService:Teleport(game.PlaceId, LocalPlayer)
+                    end,
+                },
+                { Title = "Cancel" },
+            },
+        })
+    end,
+})
+
 SecCharacterExtension = Tabs.Extension:AddSection("Character Extension", "solar/user-id-bold")
 SecCharacterExtension:AddSpace({ Height = 20 })
 SecCharacterExtension:AddDivider()
@@ -6815,8 +7309,8 @@ if setfflag then
                 local function reduceLag()
                     removeWater()
                     removeReflections()
-                    --    removeEffects()
-                    --    removeExplosions()
+                    removeEffects()
+                    removeExplosions()
                     setLowShadows()
                     setLowQuality()
                     setFlagsGraphics()
@@ -6891,7 +7385,7 @@ end
 MediaManager:SetFolder("GoonWares/Evade/MediaCache")
 
 InterfaceManager:SetLibrary(Fluent)
-InterfaceManager:SetFolder("GoonWares")
+InterfaceManager:SetFolder("GoonWares/Evade/Legacy")
 InterfaceManager:BuildInterfaceSection(Tabs.Settings)
 InterfaceManager:LoadSettings()
 
